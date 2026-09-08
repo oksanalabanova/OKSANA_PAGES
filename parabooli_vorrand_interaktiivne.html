@@ -1,0 +1,643 @@
+<style>
+        .parabola-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 10px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .parabola-header {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+            color: #ffffff;
+            padding: 12px 18px;
+            text-align: center;
+        }
+
+        .parabola-header h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .parabola-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .parabola-body {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 15px;
+            gap: 15px;
+            background: #fafafa;
+        }
+
+        .parabola-visual {
+            flex: 1 1 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #edf2f7;
+        }
+
+        .parabola-controls {
+            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .svg-wrapper {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+        }
+
+        .direction-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .dir-btn {
+            border: 1px solid #cbd5e1;
+            background: #f1f5f9;
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .dir-btn.active {
+            background: #e11d48;
+            color: #ffffff;
+            border-color: #e11d48;
+            box-shadow: 0 2px 4px rgba(225, 29, 72, 0.15);
+        }
+
+        .formulas-card {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .formula-line {
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #1e293b;
+            padding-bottom: 6px;
+        }
+        .formula-line:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .formula-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .formula-math {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            color: #fb7185;
+        }
+
+        .slider-item {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 4px;
+            accent-color: #e11d48;
+            cursor: pointer;
+        }
+
+        .val-num {
+            font-family: monospace;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .theory-toggle {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: #334155;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .theory-toggle:hover {
+            background: #e2e8f0;
+        }
+
+        .theory-content {
+            display: none;
+            background: #fff1f2;
+            border-left: 3px solid #e11d48;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #9f1239;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+
+        .math-var {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        .live-stats {
+            margin-top: 8px;
+            font-size: 0.78rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #334155;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .stat-line:last-child {
+            margin-bottom: 0;
+            border-top: 1px dashed #cbd5e1;
+            margin-top: 4px;
+            padding-top: 4px;
+            font-weight: bold;
+        }
+</style>
+
+<div class="parabola-container">
+    <div class="parabola-header">
+        <h3>Parabooli kanooniline ja üldvõrrand</h3>
+        <p>Uuri parabooli definitsiooni, muutes fookuse parameetrit p ja katsepunkti asukohta</p>
+    </div>
+
+    <div class="parabola-body">
+        <div class="parabola-visual">
+            <div class="direction-grid">
+                <button id="btn-up" class="dir-btn active" onclick="setDirection('up')">Üles (x² = 2py)</button>
+                <button id="btn-down" class="dir-btn" onclick="setDirection('down')">Alla (x² = -2py)</button>
+                <button id="btn-right" class="dir-btn" onclick="setDirection('right')">Paremale (y² = 2px)</button>
+                <button id="btn-left" class="dir-btn" onclick="setDirection('left')">Vasakule (y² = -2px)</button>
+            </div>
+
+            <div class="svg-wrapper">
+                <svg id="canvas-svg" viewBox="0 0 400 400">
+                    <defs>
+                        <marker id="ar-x" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+                        </marker>
+                        <marker id="ar-y" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 1 10 L 5 0 L 9 10 z" fill="#475569" />
+                        </marker>
+                    </defs>
+
+                    <path id="lines-grid" stroke="#f1f5f9" stroke-width="1" />
+                    <path id="lines-grid-major" stroke="#e2e8f0" stroke-width="1" />
+
+                    <line x1="0" y1="200" x2="395" y2="200" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-x)" />
+                    <line x1="200" y1="400" x2="200" y2="5" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-y)" />
+
+                    <text x="384" y="220" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="16" fill="#475569">x</text>
+                    <text x="182" y="18" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="16" fill="#475569">y</text>
+                    <text x="187" y="215" font-family="sans-serif" font-size="12" fill="#94a3b8">0</text>
+
+                    <g id="axes-numbers"></g>
+
+                    <line id="directrix-line" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4" />
+                    <text id="lbl-directrix" fill="#dc2626" font-size="12" font-weight="bold" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"></text>
+
+                    <path id="parabola-path" fill="none" stroke="#e11d48" stroke-width="3" />
+
+                    <circle id="focus-dot" r="5" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
+                    <text id="lbl-focus" fill="#1d4ed8" font-size="13" font-weight="bold" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round">F</text>
+
+                    <circle id="point-m" r="5.5" fill="#10b981" stroke="#ffffff" stroke-width="1.8" />
+                    <text id="lbl-m" fill="#047857" font-size="13" font-weight="bold" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round">M</text>
+
+                    <line id="line-mf" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="2 2" />
+                    <line id="line-md" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="2 2" />
+
+                    <circle cx="200" cy="200" r="5" fill="#475569" stroke="#ffffff" stroke-width="1.5" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="parabola-controls">
+
+            <div class="formulas-card">
+                <div class="formula-line">
+                    <div class="formula-label">Kanooniline võrrand (haripunktiga O):</div>
+                    <div class="formula-math" id="eq-canonical"></div>
+                </div>
+                <div class="formula-line">
+                    <div class="formula-label">Üldvõrrand:</div>
+                    <div class="formula-math" id="eq-general" style="color: #c084fc; font-weight: bold;"></div>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Fookuse parameeter (<span class="math-var">p</span>)</span>
+                    <span class="val-num" id="lbl-p">2</span>
+                </div>
+                <div class="slider-row">
+                    <span>0.5</span>
+                    <input type="range" id="sl-p" min="0.5" max="8" step="0.5" value="2">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Katsepunkti <span id="lbl-m-coord">M koordinaat</span></span>
+                    <span class="val-num" id="lbl-slider-m">3</span>
+                </div>
+                <div class="slider-row">
+                    <span>-8</span>
+                    <input type="range" id="sl-m" min="-8" max="8" step="0.2" value="3">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="live-stats">
+                <div class="stat-line">
+                    <span>Fookuse koordinaadid:</span>
+                    <span id="stat-f" style="font-family: monospace; font-weight: bold; color: #3b82f6;">F(0; 1)</span>
+                </div>
+                <div class="stat-line">
+                    <span>Juhtjoone (direktriisi) võrrand:</span>
+                    <span id="stat-d" style="font-family: monospace; font-weight: bold; color: #ef4444;">y = -1</span>
+                </div>
+                <div class="stat-line">
+                    <span>Kaugus fookuseni d(M, F):</span>
+                    <span id="stat-dist1" style="font-family: monospace; color: #3b82f6;">0.00</span>
+                </div>
+                <div class="stat-line">
+                    <span>Kaugus juhtjooneni d(M, d):</span>
+                    <span id="stat-dist2" style="font-family: monospace; color: #ef4444;">0.00</span>
+                </div>
+                <div class="stat-line">
+                    <span>Võrdsuse kontroll:</span>
+                    <span style="color: #10b981;">d(M, F) ≡ d(M, d) ✅</span>
+                </div>
+            </div>
+
+            <div>
+                <button class="theory-toggle" onclick="toggleTheory()">
+                    <span>ℹ️ Parabooli geomeetriline definitsioon</span>
+                    <span id="theory-arrow">▼</span>
+                </button>
+                <div class="theory-content" id="theory-block">
+                    <strong>Parabool</strong> on kõigi selliste tasandi punktide <span class="math-var">M(x; y)</span> hulk, mis on võrdsel kaugusel antud punktist <span class="math-var">F</span> (fookusest) ja antud sirgest <span class="math-var">d</span> (juhtjoonest):<br>
+                    <div style="margin: 5px 0; text-align: center; font-weight: bold;">
+                        d(M, F) = d(M, d)
+                    </div>
+                    <strong>Kanoonilised kujud koordinaatide alguspunktis:</strong><br>
+                    • <strong>x² = 2py</strong> (avaneb üles, juhtjoon y = -p/2)<br>
+                    • <strong>x² = -2py</strong> (avaneb alla, juhtjoon y = p/2)<br>
+                    • <strong>y² = 2px</strong> (avaneb paremale, juhtjoon x = -p/2)<br>
+                    • <strong>y² = -2px</strong> (avaneb vasakule, juhtjoon x = p/2)<br>
+                    <br>
+                    Üldvõrrandiks saamiseks viiakse kõik liikmed ühele poole, näiteks: <strong>x² - 2py = 0</strong>.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const pxScale = 20;
+    let currentDir = 'up';
+
+    function toSvg(mx, my) {
+        return { x: 200 + mx * pxScale, y: 200 - my * pxScale };
+    }
+
+    function drawGrid() {
+        const grid = document.getElementById('lines-grid');
+        const gridMajor = document.getElementById('lines-grid-major');
+        let dMinor = '';
+        let dMajor = '';
+
+        for (let i = 20; i < 400; i += 20) {
+            if (i === 200) continue;
+            const line = `M ${i} 0 L ${i} 400 M 0 ${i} L 400 ${i} `;
+            if (i % 100 === 0) dMajor += line;
+            else dMinor += line;
+        }
+        grid.setAttribute('d', dMinor);
+        gridMajor.setAttribute('d', dMajor);
+
+        const container = document.getElementById('axes-numbers');
+        for (let val = -8; val <= 8; val += 2) {
+            if (val === 0) continue;
+            const pX = toSvg(val, 0);
+            const tX = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tX.setAttribute("x", pX.x);
+            tX.setAttribute("y", pX.y + 15);
+            tX.setAttribute("text-anchor", "middle");
+            tX.setAttribute("font-size", "11");
+            tX.setAttribute("fill", "#64748b");
+            tX.setAttribute("paint-order", "stroke");
+            tX.setAttribute("stroke", "#ffffff");
+            tX.setAttribute("stroke-width", "3");
+            tX.textContent = val;
+            container.appendChild(tX);
+
+            const pY = toSvg(0, val);
+            const tY = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tY.setAttribute("x", pY.x - 9);
+            tY.setAttribute("y", pY.y + 4);
+            tY.setAttribute("text-anchor", "end");
+            tY.setAttribute("font-size", "11");
+            tY.setAttribute("fill", "#64748b");
+            tY.setAttribute("paint-order", "stroke");
+            tY.setAttribute("stroke", "#ffffff");
+            tY.setAttribute("stroke-width", "3");
+            tY.textContent = val;
+            container.appendChild(tY);
+        }
+    }
+
+    function niceNum(num) {
+        return parseFloat(num.toFixed(2)).toString();
+    }
+
+    function setDirection(dir) {
+        currentDir = dir;
+        const buttons = ['btn-up', 'btn-down', 'btn-right', 'btn-left'];
+        buttons.forEach(id => {
+            document.getElementById(id).className = id === `btn-${dir}` ? 'dir-btn active' : 'dir-btn';
+        });
+
+        const lblMCoord = document.getElementById('lbl-m-coord');
+        if (dir === 'up' || dir === 'down') {
+            lblMCoord.innerHTML = 'x-koordinaat (<span class="math-var">x<sub>M</sub></span>)';
+        } else {
+            lblMCoord.innerHTML = 'y-koordinaat (<span class="math-var">y<sub>M</sub></span>)';
+        }
+
+        update();
+    }
+
+    function update() {
+        const p = parseFloat(document.getElementById('sl-p').value);
+        const mVal = parseFloat(document.getElementById('sl-m').value);
+
+        document.getElementById('lbl-p').textContent = p;
+        document.getElementById('lbl-slider-m').textContent = mVal;
+
+        const pTwo = p * 2;
+        let xM, yM;
+        let xF = 0, yF = 0;
+        let dLineX1, dLineY1, dLineX2, dLineY2;
+        let dEqStr = "";
+        let canonicalFormula = "";
+        let generalFormula = "";
+
+        let pathD = "";
+
+        if (currentDir === 'up') {
+            xF = 0;
+            yF = p / 2;
+
+            for (let x = -10; x <= 10; x += 0.1) {
+                const y = (x * x) / (2 * p);
+                const svgPt = toSvg(x, y);
+                if (x === -10) pathD += `M ${svgPt.x} ${svgPt.y}`;
+                else pathD += ` L ${svgPt.x} ${svgPt.y}`;
+            }
+
+            xM = mVal;
+            yM = (xM * xM) / (2 * p);
+
+            const dY = -p / 2;
+            const svgD = toSvg(0, dY);
+            dLineX1 = 0; dLineY1 = svgD.y;
+            dLineX2 = 400; dLineY2 = svgD.y;
+            dEqStr = `y = -${niceNum(p/2)}`;
+
+            canonicalFormula = `x² = ${niceNum(pTwo)}y`;
+            generalFormula = `x² - ${niceNum(pTwo)}y = 0`;
+
+        } else if (currentDir === 'down') {
+            xF = 0;
+            yF = -p / 2;
+
+            for (let x = -10; x <= 10; x += 0.1) {
+                const y = -(x * x) / (2 * p);
+                const svgPt = toSvg(x, y);
+                if (x === -10) pathD += `M ${svgPt.x} ${svgPt.y}`;
+                else pathD += ` L ${svgPt.x} ${svgPt.y}`;
+            }
+
+            xM = mVal;
+            yM = -(xM * xM) / (2 * p);
+
+            const dY = p / 2;
+            const svgD = toSvg(0, dY);
+            dLineX1 = 0; dLineY1 = svgD.y;
+            dLineX2 = 400; dLineY2 = svgD.y;
+            dEqStr = `y = ${niceNum(p/2)}`;
+
+            canonicalFormula = `x² = -${niceNum(pTwo)}y`;
+            generalFormula = `x² + ${niceNum(pTwo)}y = 0`;
+
+        } else if (currentDir === 'right') {
+            xF = p / 2;
+            yF = 0;
+
+            for (let y = -10; y <= 10; y += 0.1) {
+                const x = (y * y) / (2 * p);
+                const svgPt = toSvg(x, y);
+                if (y === -10) pathD += `M ${svgPt.x} ${svgPt.y}`;
+                else pathD += ` L ${svgPt.x} ${svgPt.y}`;
+            }
+
+            yM = mVal;
+            xM = (yM * yM) / (2 * p);
+
+            const dX = -p / 2;
+            const svgD = toSvg(dX, 0);
+            dLineX1 = svgD.x; dLineY1 = 0;
+            dLineX2 = svgD.x; dLineY2 = 400;
+            dEqStr = `x = -${niceNum(p/2)}`;
+
+            canonicalFormula = `y² = ${niceNum(pTwo)}x`;
+            generalFormula = `y² - ${niceNum(pTwo)}x = 0`;
+
+        } else if (currentDir === 'left') {
+            xF = -p / 2;
+            yF = 0;
+
+            for (let y = -10; y <= 10; y += 0.1) {
+                const x = -(y * y) / (2 * p);
+                const svgPt = toSvg(x, y);
+                if (y === -10) pathD += `M ${svgPt.x} ${svgPt.y}`;
+                else pathD += ` L ${svgPt.x} ${svgPt.y}`;
+            }
+
+            yM = mVal;
+            xM = -(yM * yM) / (2 * p);
+
+            const dX = p / 2;
+            const svgD = toSvg(dX, 0);
+            dLineX1 = svgD.x; dLineY1 = 0;
+            dLineX2 = svgD.x; dLineY2 = 400;
+            dEqStr = `x = ${niceNum(p/2)}`;
+
+            canonicalFormula = `y² = -${niceNum(pTwo)}x`;
+            generalFormula = `y² + ${niceNum(pTwo)}x = 0`;
+        }
+
+        document.getElementById('parabola-path').setAttribute('d', pathD);
+
+        const svgF = toSvg(xF, yF);
+        const focusDot = document.getElementById('focus-dot');
+        focusDot.setAttribute('cx', svgF.x);
+        focusDot.setAttribute('cy', svgF.y);
+        const lblFocus = document.getElementById('lbl-focus');
+        lblFocus.setAttribute('x', svgF.x + (currentDir === 'right' ? 14 : currentDir === 'left' ? -14 : 10));
+        lblFocus.setAttribute('y', svgF.y + (currentDir === 'up' ? -8 : currentDir === 'down' ? 16 : 4));
+
+        const svgM = toSvg(xM, yM);
+        const pointM = document.getElementById('point-m');
+        pointM.setAttribute('cx', svgM.x);
+        pointM.setAttribute('cy', svgM.y);
+        const lblM = document.getElementById('lbl-m');
+        lblM.setAttribute('x', svgM.x + 10);
+        lblM.setAttribute('y', svgM.y - 8);
+
+        const directrixLine = document.getElementById('directrix-line');
+        directrixLine.setAttribute('x1', dLineX1);
+        directrixLine.setAttribute('y1', dLineY1);
+        directrixLine.setAttribute('x2', dLineX2);
+        directrixLine.setAttribute('y2', dLineY2);
+
+        const lblDirectrix = document.getElementById('lbl-directrix');
+        if (currentDir === 'up' || currentDir === 'down') {
+            lblDirectrix.setAttribute('x', 350);
+            lblDirectrix.setAttribute('y', dLineY1 - 6);
+        } else {
+            lblDirectrix.setAttribute('x', dLineX1 + 6);
+            lblDirectrix.setAttribute('y', 30);
+        }
+        lblDirectrix.textContent = dEqStr;
+
+        const lineMF = document.getElementById('line-mf');
+        lineMF.setAttribute('x1', svgM.x);
+        lineMF.setAttribute('y1', svgM.y);
+        lineMF.setAttribute('x2', svgF.x);
+        lineMF.setAttribute('y2', svgF.y);
+
+        const lineMD = document.getElementById('line-md');
+        let footX = svgM.x, footY = svgM.y;
+        if (currentDir === 'up' || currentDir === 'down') {
+            footY = dLineY1;
+        } else {
+            footX = dLineX1;
+        }
+        lineMD.setAttribute('x1', svgM.x);
+        lineMD.setAttribute('y1', svgM.y);
+        lineMD.setAttribute('x2', footX);
+        lineMD.setAttribute('y2', footY);
+
+        const distMF = Math.sqrt((xM - xF) ** 2 + (yM - yF) ** 2);
+        let distMD;
+        if (currentDir === 'up') distMD = Math.abs(yM - (-p / 2));
+        else if (currentDir === 'down') distMD = Math.abs(yM - (p / 2));
+        else if (currentDir === 'right') distMD = Math.abs(xM - (-p / 2));
+        else distMD = Math.abs(xM - (p / 2));
+
+        document.getElementById('stat-f').textContent = `F(${niceNum(xF)}; ${niceNum(yF)})`;
+        document.getElementById('stat-d').textContent = dEqStr;
+        document.getElementById('stat-dist1').textContent = niceNum(distMF);
+        document.getElementById('stat-dist2').textContent = niceNum(distMD);
+
+        document.getElementById('eq-canonical').textContent = canonicalFormula;
+        document.getElementById('eq-general').textContent = generalFormula;
+    }
+
+    function toggleTheory() {
+        const block = document.getElementById('theory-block');
+        const arrow = document.getElementById('theory-arrow');
+        if (block.style.display === 'block') {
+            block.style.display = 'none';
+            arrow.textContent = '▼';
+        } else {
+            block.style.display = 'block';
+            arrow.textContent = '▲';
+        }
+    }
+
+    document.getElementById('sl-p').addEventListener('input', update);
+    document.getElementById('sl-m').addEventListener('input', update);
+
+    drawGrid();
+    setDirection('up');
+</script>
