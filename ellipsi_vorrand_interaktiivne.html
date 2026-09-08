@@ -1,0 +1,650 @@
+<style>
+        .ellips-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 10px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .ellips-header {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            padding: 12px 18px;
+            text-align: center;
+        }
+
+        .ellips-header h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .ellips-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .ellips-body {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 15px;
+            gap: 15px;
+            background: #fafafa;
+        }
+
+        .ellips-visual {
+            flex: 1 1 310px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #edf2f7;
+        }
+
+        .ellips-controls {
+            flex: 1 1 310px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .svg-wrapper {
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1 / 1;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .formulas-card {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .formula-line {
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #1e293b;
+            padding-bottom: 6px;
+        }
+        .formula-line:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .formula-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .formula-math-flex {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.15rem;
+            font-style: italic;
+        }
+
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            padding: 0 4px;
+        }
+
+        .numerator {
+            border-bottom: 1.5px solid #38bdf8;
+            padding-bottom: 1px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .denominator {
+            padding-top: 2px;
+            text-align: center;
+            width: 100%;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .slider-item {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 4px;
+            accent-color: #0284c7;
+            cursor: pointer;
+        }
+
+        .val-num {
+            font-family: monospace;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .theory-toggle {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: #334155;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theory-toggle:hover {
+            background: #e2e8f0;
+        }
+
+        .theory-content {
+            display: none;
+            background: #f0f9ff;
+            border-left: 3px solid #0284c7;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #0369a1;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+
+        .math-var {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        .tip-drag {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse-ring 1.5s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+</style>
+
+<div class="ellips-container">
+    <div class="ellips-header">
+        <h3>Ellipsi kanooniline ja üldvõrrand</h3>
+        <p>Lohista keskpunkti C(m; n) koordinaatteljestikul või muuda pooltelgi a ja b liuguritega</p>
+    </div>
+
+    <div class="ellips-body">
+        <div class="ellips-visual">
+            <div class="svg-wrapper">
+                <svg id="canvas-svg" viewBox="0 0 400 400">
+                    <defs>
+                        <marker id="ar-x" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+                        </marker>
+                        <marker id="ar-y" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 1 10 L 5 0 L 9 10 z" fill="#475569" />
+                        </marker>
+                    </defs>
+
+                    <path id="lines-grid" stroke="#f1f5f9" stroke-width="1" />
+                    <path id="lines-grid-major" stroke="#e2e8f0" stroke-width="1" />
+
+                    <line x1="0" y1="200" x2="395" y2="200" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-x)" />
+                    <line x1="200" y1="400" x2="200" y2="5" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-y)" />
+
+                    <text x="388" y="218" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="13" fill="#475569">x</text>
+                    <text x="185" y="16" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="13" fill="#475569">y</text>
+                    <text x="188" y="214" font-family="sans-serif" font-size="11" fill="#94a3b8">0</text>
+
+                    <g id="axes-numbers"></g>
+
+                    <line id="dash-x" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3" />
+                    <line id="dash-y" stroke="#0284c7" stroke-width="1" stroke-dasharray="3 3" />
+
+                    <ellipse id="drawn-ellipse" fill="rgba(2, 132, 199, 0.05)" stroke="#0284c7" stroke-width="2.5" />
+
+                    <line id="line-a" stroke="#10b981" stroke-width="2" />
+                    <text id="txt-a" fill="#10b981" font-weight="bold" font-size="10" text-anchor="middle" font-family="sans-serif"></text>
+
+                    <line id="line-b" stroke="#f59e0b" stroke-width="2" />
+                    <text id="txt-b" fill="#f59e0b" font-weight="bold" font-size="10" text-anchor="middle" font-family="sans-serif"></text>
+
+                    <circle id="focus-1" r="3.5" fill="#8b5cf6" />
+                    <text id="lbl-f1" fill="#8b5cf6" font-size="10" font-weight="bold" text-anchor="middle" font-family="sans-serif">F₁</text>
+                    <circle id="focus-2" r="3.5" fill="#8b5cf6" />
+                    <text id="lbl-f2" fill="#8b5cf6" font-size="10" font-weight="bold" text-anchor="middle" font-family="sans-serif">F₂</text>
+
+                    <circle id="ctrl-center" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="2" style="cursor: move;" />
+                    <text id="lbl-center" fill="#ef4444" font-size="11" font-weight="bold" font-family="sans-serif">C</text>
+                </svg>
+            </div>
+            <div class="tip-drag">
+                <div class="pulse-dot"></div>
+                <span>Lohista keskpunkti C otse hiire või sõrmega!</span>
+            </div>
+        </div>
+
+        <div class="ellips-controls">
+
+            <div class="formulas-card">
+                <div class="formula-line">
+                    <div class="formula-label">Kanooniline võrrand keskpunktiga C(m; n):</div>
+                    <div class="formula-math-flex" id="eq-canonical"></div>
+                </div>
+                <div class="formula-line">
+                    <div class="formula-label">Üldvõrrand (Ax² + Cy² + Dx + Ey + F = 0):</div>
+                    <div id="eq-general" style="font-family: monospace; font-size: 1.05rem; color: #a78bfa; font-weight: bold; margin-top: 4px;"></div>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Keskpunkti x-koordinaat (<span class="math-var">m</span>)</span>
+                    <span class="val-num" id="lbl-m">0</span>
+                </div>
+                <div class="slider-row">
+                    <span>-8</span>
+                    <input type="range" id="sl-m" min="-8" max="8" step="0.5" value="0">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Keskpunkti y-koordinaat (<span class="math-var">n</span>)</span>
+                    <span class="val-num" id="lbl-n">0</span>
+                </div>
+                <div class="slider-row">
+                    <span>-8</span>
+                    <input type="range" id="sl-n" min="-8" max="8" step="0.5" value="0">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Horisontaalne pooltelg (<span class="math-var">a</span>)</span>
+                    <span class="val-num" id="lbl-slider-a">4</span>
+                </div>
+                <div class="slider-row">
+                    <span>1</span>
+                    <input type="range" id="sl-a" min="1" max="8" step="0.5" value="4">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Vertikaalne pooltelg (<span class="math-var">b</span>)</span>
+                    <span class="val-num" id="lbl-slider-b">3</span>
+                </div>
+                <div class="slider-row">
+                    <span>1</span>
+                    <input type="range" id="sl-b" min="1" max="8" step="0.5" value="3">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div>
+                <button class="theory-toggle" onclick="toggleTheory()">
+                    <span>ℹ️ Kuidas kanoonilisest saab üldvõrrand?</span>
+                    <span id="theory-arrow">▼</span>
+                </button>
+                <div class="theory-content" id="theory-block">
+                    1. Võta kanooniline võrrand:<br>
+                    <div style="margin: 4px 0; text-align: center;">
+                        <span class="fraction"><span class="numerator">(x - m)²</span><span class="denominator">a²</span></span> +
+                        <span class="fraction"><span class="numerator">(y - n)²</span><span class="denominator">b²</span></span> = 1
+                    </div>
+                    2. Korruta võrrandi mõlemad pooled läbi ühise nimetajaga <span class="math-var">a²b²</span>:<br>
+                    <div style="margin: 4px 0; text-align: center; font-weight: bold;">
+                        b²(x - m)² + a²(y - n)² = a²b²
+                    </div>
+                    3. Ava sulud ja vii kõik liikmed vasakule poole:<br>
+                    <div style="margin: 4px 0; font-size: 0.75rem; text-align: center;">
+                        b²(x² - 2mx + m²) + a²(y² - 2ny + n²) - a²b² = 0
+                    </div>
+                    4. Rühmita liikmed üldkujule:<br>
+                    <div style="margin: 4px 0; text-align: center; font-weight: bold; color: #a78bfa;">
+                        Ax² + Cy² + Dx + Ey + F = 0
+                    </div>
+                    kus kordajad on:<br>
+                    <span class="math-var">A = b²</span>, &nbsp; <span class="math-var">C = a²</span>, &nbsp; <span class="math-var">D = -2b²m</span>, &nbsp; <span class="math-var">E = -2a²n</span>, &nbsp; <span class="math-var">F = b²m² + a²n² - a²b²</span>.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const mainSvg = document.getElementById('canvas-svg');
+    const ctrlDot = document.getElementById('ctrl-center');
+    const pxScale = 20;
+
+    function toSvg(mx, my) {
+        return { x: 200 + mx * pxScale, y: 200 - my * pxScale };
+    }
+
+    function toMath(sx, sy) {
+        return { mx: (sx - 200) / pxScale, my: (200 - sy) / pxScale };
+    }
+
+    function drawGrid() {
+        const grid = document.getElementById('lines-grid');
+        const gridMajor = document.getElementById('lines-grid-major');
+        let dMinor = '';
+        let dMajor = '';
+
+        for (let i = 20; i < 400; i += 20) {
+            if (i === 200) continue;
+            const line = `M ${i} 0 L ${i} 400 M 0 ${i} L 400 ${i} `;
+            if (i % 100 === 0) dMajor += line;
+            else dMinor += line;
+        }
+        grid.setAttribute('d', dMinor);
+        gridMajor.setAttribute('d', dMajor);
+
+        const container = document.getElementById('axes-numbers');
+        for (let val = -8; val <= 8; val += 2) {
+            if (val === 0) continue;
+            const pX = toSvg(val, 0);
+            const tX = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tX.setAttribute("x", pX.x);
+            tX.setAttribute("y", pX.y + 13);
+            tX.setAttribute("text-anchor", "middle");
+            tX.setAttribute("font-size", "9");
+            tX.setAttribute("fill", "#94a3b8");
+            tX.textContent = val;
+            container.appendChild(tX);
+
+            const pY = toSvg(0, val);
+            const tY = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tY.setAttribute("x", pY.x - 8);
+            tY.setAttribute("y", pY.y + 3);
+            tY.setAttribute("text-anchor", "end");
+            tY.setAttribute("font-size", "9");
+            tY.setAttribute("fill", "#94a3b8");
+            tY.textContent = val;
+            container.appendChild(tY);
+        }
+    }
+
+    function niceNum(num) {
+        return parseFloat(num.toFixed(2)).toString();
+    }
+
+    function update() {
+        const m = parseFloat(document.getElementById('sl-m').value);
+        const n = parseFloat(document.getElementById('sl-n').value);
+        const a = parseFloat(document.getElementById('sl-a').value);
+        const b = parseFloat(document.getElementById('sl-b').value);
+
+        document.getElementById('lbl-m').textContent = m > 0 ? `+${m}` : m;
+        document.getElementById('lbl-n').textContent = n > 0 ? `+${n}` : n;
+        document.getElementById('lbl-slider-a').textContent = a;
+        document.getElementById('lbl-slider-b').textContent = b;
+
+        const center = toSvg(m, n);
+        const rxPx = a * pxScale;
+        const ryPx = b * pxScale;
+
+        const ellipse = document.getElementById('drawn-ellipse');
+        ellipse.setAttribute('cx', center.x);
+        ellipse.setAttribute('cy', center.y);
+        ellipse.setAttribute('rx', rxPx);
+        ellipse.setAttribute('ry', ryPx);
+
+        ctrlDot.setAttribute('cx', center.x);
+        ctrlDot.setAttribute('cy', center.y);
+
+        const lblCenter = document.getElementById('lbl-center');
+        lblCenter.setAttribute('x', center.x - 12);
+        lblCenter.setAttribute('y', center.y - 10);
+        lblCenter.textContent = `C(${m}; ${n})`;
+
+        const orig = toSvg(0, 0);
+        document.getElementById('dash-x').setAttribute('x1', center.x);
+        document.getElementById('dash-x').setAttribute('y1', center.y);
+        document.getElementById('dash-x').setAttribute('x2', center.x);
+        document.getElementById('dash-x').setAttribute('y2', orig.y);
+
+        document.getElementById('dash-y').setAttribute('x1', center.x);
+        document.getElementById('dash-y').setAttribute('y1', center.y);
+        document.getElementById('dash-y').setAttribute('x2', orig.x);
+        document.getElementById('dash-y').setAttribute('y2', center.y);
+
+        const lineA = document.getElementById('line-a');
+        lineA.setAttribute('x1', center.x);
+        lineA.setAttribute('y1', center.y);
+        lineA.setAttribute('x2', center.x + rxPx);
+        lineA.setAttribute('y2', center.y);
+
+        const txtA = document.getElementById('txt-a');
+        txtA.setAttribute('x', center.x + rxPx / 2);
+        txtA.setAttribute('y', center.y - 4);
+        txtA.textContent = `a=${a}`;
+
+        const lineB = document.getElementById('line-b');
+        lineB.setAttribute('x1', center.x);
+        lineB.setAttribute('y1', center.y);
+        lineB.setAttribute('x2', center.x);
+        lineB.setAttribute('y2', center.y - ryPx);
+
+        const txtB = document.getElementById('txt-b');
+        txtB.setAttribute('x', center.x + 15);
+        txtB.setAttribute('y', center.y - ryPx / 2);
+        txtB.textContent = `b=${b}`;
+
+        const aSq = a * a;
+        const bSq = b * b;
+        const f1 = document.getElementById('focus-1');
+        const f2 = document.getElementById('focus-2');
+        const lblF1 = document.getElementById('lbl-f1');
+        const lblF2 = document.getElementById('lbl-f2');
+
+        if (aSq !== bSq) {
+            const cVal = Math.sqrt(Math.abs(aSq - bSq));
+            const cPx = cVal * pxScale;
+
+            f1.setAttribute('display', 'block');
+            f2.setAttribute('display', 'block');
+            lblF1.setAttribute('display', 'block');
+            lblF2.setAttribute('display', 'block');
+
+            if (aSq > bSq) {
+                f1.setAttribute('cx', center.x - cPx);
+                f1.setAttribute('cy', center.y);
+                lblF1.setAttribute('x', center.x - cPx);
+                lblF1.setAttribute('y', center.y + 12);
+
+                f2.setAttribute('cx', center.x + cPx);
+                f2.setAttribute('cy', center.y);
+                lblF2.setAttribute('x', center.x + cPx);
+                lblF2.setAttribute('y', center.y + 12);
+            } else {
+                f1.setAttribute('cx', center.x);
+                f1.setAttribute('cy', center.y + cPx);
+                lblF1.setAttribute('x', center.x + 12);
+                lblF1.setAttribute('y', center.y + cPx + 3);
+
+                f2.setAttribute('cx', center.x);
+                f2.setAttribute('cy', center.y - cPx);
+                lblF2.setAttribute('x', center.x + 12);
+                lblF2.setAttribute('y', center.y - cPx + 3);
+            }
+        } else {
+            f1.setAttribute('display', 'none');
+            f2.setAttribute('display', 'none');
+            lblF1.setAttribute('display', 'none');
+            lblF2.setAttribute('display', 'none');
+        }
+
+        let numX = m === 0 ? "x²" : (m > 0 ? `(x - ${m})²` : `(x + ${Math.abs(m)})²`);
+        let numY = n === 0 ? "y²" : (n > 0 ? `(y - ${n})²` : `(y + ${Math.abs(n)})²`);
+
+        const eqCanonical = document.getElementById('eq-canonical');
+        eqCanonical.innerHTML = `
+            <span class="fraction"><span class="numerator">${numX}</span><span class="denominator">${aSq}</span></span>
+            <span>+</span>
+            <span class="fraction"><span class="numerator">${numY}</span><span class="denominator">${bSq}</span></span>
+            <span>= 1</span>
+        `;
+
+        let A = bSq;
+        let C = aSq;
+        let D = -2 * bSq * m;
+        let E = -2 * aSq * n;
+        let F_coeff = bSq * m * m + aSq * n * n - aSq * bSq;
+
+        const pdf_gcd = (x, y) => (!y ? x : pdf_gcd(y, x % y));
+        const findGCDOfArray = (arr) => arr.reduce((a, b) => pdf_gcd(a, b));
+
+        let div = 1;
+        if (Number.isInteger(A) && Number.isInteger(C) && Number.isInteger(D) && Number.isInteger(E) && Number.isInteger(F_coeff)) {
+            try {
+                div = Math.abs(findGCDOfArray([A, C, D, E, F_coeff]));
+                if (div > 1) {
+                    A = A / div;
+                    C = C / div;
+                    D = D / div;
+                    E = E / div;
+                    F_coeff = F_coeff / div;
+                }
+            } catch(e) {}
+        }
+
+        let aTerm = A === 1 ? "x²" : `${niceNum(A)}x²`;
+        let cTerm = C === 1 ? " + y²" : ` + ${niceNum(C)}y²`;
+        let dTerm = D === 0 ? "" : (D > 0 ? ` + ${niceNum(D)}x` : ` - ${niceNum(Math.abs(D))}x`);
+        let eTerm = E === 0 ? "" : (E > 0 ? ` + ${niceNum(E)}y` : ` - ${niceNum(Math.abs(E))}y`);
+        let fTerm = F_coeff === 0 ? "" : (F_coeff > 0 ? ` + ${niceNum(F_coeff)}` : ` - ${niceNum(Math.abs(F_coeff))}`);
+
+        document.getElementById('eq-general').innerHTML = `${aTerm}${cTerm}${dTerm}${eTerm}${fTerm} = 0`;
+    }
+
+    let dragging = false;
+
+    function getPos(e) {
+        const rect = mainSvg.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: cx - rect.left,
+            y: cy - rect.top
+        };
+    }
+
+    function startDrag(e) {
+        dragging = true;
+        e.preventDefault();
+    }
+
+    function drag(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const p = getPos(e);
+        const math = toMath(p.x, p.y);
+
+        let snapX = Math.round(math.mx * 2) / 2;
+        let snapY = Math.round(math.my * 2) / 2;
+
+        snapX = Math.max(-8, Math.min(8, snapX));
+        snapY = Math.max(-8, Math.min(8, snapY));
+
+        document.getElementById('sl-m').value = snapX;
+        document.getElementById('sl-n').value = snapY;
+        update();
+    }
+
+    function endDrag() {
+        dragging = false;
+    }
+
+    function toggleTheory() {
+        const block = document.getElementById('theory-block');
+        const arrow = document.getElementById('theory-arrow');
+        if (block.style.display === 'block') {
+            block.style.display = 'none';
+            arrow.textContent = '▼';
+        } else {
+            block.style.display = 'block';
+            arrow.textContent = '▲';
+        }
+    }
+
+    document.getElementById('sl-m').addEventListener('input', update);
+    document.getElementById('sl-n').addEventListener('input', update);
+    document.getElementById('sl-a').addEventListener('input', update);
+    document.getElementById('sl-b').addEventListener('input', update);
+
+    ctrlDot.addEventListener('mousedown', startDrag);
+    ctrlDot.addEventListener('touchstart', startDrag, { passive: false });
+
+    window.addEventListener('mousemove', drag);
+    window.addEventListener('touchmove', drag, { passive: false });
+
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    drawGrid();
+    update();
+</script>
