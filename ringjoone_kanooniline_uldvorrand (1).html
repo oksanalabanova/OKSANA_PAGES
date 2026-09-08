@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ringjoone kanooniline ja üldvõrrand</title>
+    <style>
+        .ringjoon-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 780px;
+            margin: 10px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .ringjoon-header {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: #ffffff;
+            padding: 12px 18px;
+            text-align: center;
+        }
+
+        .ringjoon-header h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .ringjoon-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .ringjoon-body {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 15px;
+            gap: 15px;
+            background: #fafafa;
+        }
+
+        .ringjoon-visual {
+            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #edf2f7;
+        }
+
+        .ringjoon-controls {
+            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .svg-wrapper {
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1 / 1;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .formulas-card {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .formula-line {
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #334155;
+            padding-bottom: 6px;
+        }
+        .formula-line:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .formula-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+
+        .formula-math {
+            font-size: 1.1rem;
+            font-family: monospace;
+            color: #38bdf8;
+        }
+
+        .slider-item {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 5px;
+            accent-color: #2e7d32;
+            cursor: pointer;
+        }
+
+        .val-num {
+            font-family: monospace;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .theory-toggle {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: #334155;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .theory-toggle:hover {
+            background: #e2e8f0;
+        }
+
+        .theory-content {
+            display: none;
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #1e3a8a;
+            line-height: 1.35;
+            margin-top: 5px;
+        }
+
+        .math-var {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-weight: bold;
+        }
+        
+        .tip-drag {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ringjoon-container">
+    <div class="ringjoon-header">
+        <h3>Ringjoone kanooniline ja üldvõrrand</h3>
+        <p>Lohista keskpunkti punast täppi koordinaatteljestikul või kasuta liugureid</p>
+    </div>
+
+    <div class="ringjoon-body">
+        <!-- Vasak veerg: Graafik -->
+        <div class="ringjoon-visual">
+            <div class="svg-wrapper">
+                <svg id="canvas-svg" viewBox="0 0 400 400">
+                    <defs>
+                        <marker id="ar-x" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+                        </marker>
+                        <marker id="ar-y" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 1 10 L 5 0 L 9 10 z" fill="#475569" />
+                        </marker>
+                    </defs>
+
+                    <!-- Võrgustik -->
+                    <path id="lines-grid" stroke="#f1f5f9" stroke-width="1" />
+                    <path id="lines-grid-major" stroke="#e2e8f0" stroke-width="1" />
+
+                    <!-- Koordinaatteljed -->
+                    <line x1="0" y1="200" x2="395" y2="200" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-x)" />
+                    <line x1="200" y1="400" x2="200" y2="5" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-y)" />
+
+                    <!-- Telgede tähised -->
+                    <text x="388" y="218" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="13" fill="#475569">x</text>
+                    <text x="185" y="16" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="13" fill="#475569">y</text>
+                    <text x="188" y="214" font-family="sans-serif" font-size="11" fill="#94a3b8">0</text>
+
+                    <!-- Dünaamilised telgede numbrid (JS täidab) -->
+                    <g id="axes-numbers"></g>
+
+                    <!-- Projektsioonid telgedele -->
+                    <line id="dash-x" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3" />
+                    <line id="dash-y" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3 3" />
+
+                    <!-- Ringjoon ise -->
+                    <circle id="drawn-circle" fill="rgba(46, 125, 50, 0.05)" stroke="#2e7d32" stroke-width="2.5" />
+
+                    <!-- Raadiuse joon -->
+                    <line id="rad-line" stroke="#10b981" stroke-width="2" />
+                    <text id="rad-txt" fill="#10b981" font-weight="bold" font-size="11" text-anchor="middle" font-family="sans-serif"></text>
+
+                    <!-- Lohistatav keskpunkt (täpp) -->
+                    <circle id="ctrl-center" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="2" style="cursor: move;" />
+                </svg>
+            </div>
+            <div class="tip-drag">
+                <div class="pulse-dot"></div>
+                <span>Keskpunkti saab otse hiire/sõrmega lohistada!</span>
+            </div>
+        </div>
+
+        <!-- Parem veerg: Valemid ja liugurid -->
+        <div class="ringjoon-controls">
+            
+            <!-- Dünaamilised Valemid -->
+            <div class="formulas-card">
+                <div class="formula-line">
+                    <div class="formula-label">Kanooniline võrrand:</div>
+                    <div class="formula-math" id="eq-canonical"></div>
+                </div>
+                <div class="formula-line">
+                    <div class="formula-label">Üldvõrrand (sulud avatud):</div>
+                    <div class="formula-math" id="eq-general" style="color: #a78bfa;"></div>
+                </div>
+            </div>
+
+            <!-- Liugur a (x0) -->
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Keskpunkti <span class="math-var">x</span>-koordinaat (<span class="math-var">a</span>)</span>
+                    <span class="val-num" id="lbl-a">0</span>
+                </div>
+                <div class="slider-row">
+                    <span>-8</span>
+                    <input type="range" id="sl-a" min="-8" max="8" step="0.5" value="0">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <!-- Liugur b (y0) -->
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Keskpunkti <span class="math-var">y</span>-koordinaat (<span class="math-var">b</span>)</span>
+                    <span class="val-num" id="lbl-b">0</span>
+                </div>
+                <div class="slider-row">
+                    <span>-8</span>
+                    <input type="range" id="sl-b" min="-8" max="8" step="0.5" value="0">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <!-- Liugur R -->
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span>Ringjoone raadius (<span class="math-var">R</span>)</span>
+                    <span class="val-num" id="lbl-r">3</span>
+                </div>
+                <div class="slider-row">
+                    <span>0.5</span>
+                    <input type="range" id="sl-r" min="0.5" max="8" step="0.1" value="3">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <!-- Teooria ja seos (Kokkupandav kokkuhoiu mõttes) -->
+            <div>
+                <button class="theory-toggle" onclick="toggleTheory()">ℹ️ Kuidas kanoonilisest saab üldvõrrand?</button>
+                <div class="theory-content" id="theory-block">
+                    Ava kanoonilise võrrandi sulud ruutude vahe valemiga:<br>
+                    <strong>(x - a)² + (y - b)² = R²</strong><br>
+                    x² - 2ax + a² + y² - 2by + b² - R² = 0<br>
+                    Koonda sarnased liikmed:<br>
+                    <strong>x² + y² + Dx + Ey + F = 0</strong>, kus:<br>
+                    <span class="math-var">D = -2a</span>, <span class="math-var">E = -2b</span>, <span class="math-var">F = a² + b² - R²</span>.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const mainSvg = document.getElementById('canvas-svg');
+    const ctrlDot = document.getElementById('ctrl-center');
+    const pxScale = 20; // 1 ühik = 20 pikslit graafikul
+
+    function toSvg(mx, my) {
+        return { x: 200 + mx * pxScale, y: 200 - my * pxScale };
+    }
+
+    function toMath(sx, sy) {
+        return { mx: (sx - 200) / pxScale, my: (200 - sy) / pxScale };
+    }
+
+    function drawGrid() {
+        const grid = document.getElementById('lines-grid');
+        const gridMajor = document.getElementById('lines-grid-major');
+        let dMinor = '';
+        let dMajor = '';
+
+        for (let i = 20; i < 400; i += 20) {
+            if (i === 200) continue;
+            const line = `M ${i} 0 L ${i} 400 M 0 ${i} L 400 ${i} `;
+            if (i % 100 === 0) dMajor += line;
+            else dMinor += line;
+        }
+        grid.setAttribute('d', dMinor);
+        gridMajor.setAttribute('d', dMajor);
+
+        // Numbrid telgedele
+        const container = document.getElementById('axes-numbers');
+        for (let val = -8; val <= 8; val += 2) {
+            if (val === 0) continue;
+            const pX = toSvg(val, 0);
+            const tX = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tX.setAttribute("x", pX.x);
+            tX.setAttribute("y", pX.y + 13);
+            tX.setAttribute("text-anchor", "middle");
+            tX.setAttribute("font-size", "9");
+            tX.setAttribute("fill", "#94a3b8");
+            tX.textContent = val;
+            container.appendChild(tX);
+
+            const pY = toSvg(0, val);
+            const tY = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tY.setAttribute("x", pY.x - 8);
+            tY.setAttribute("y", pY.y + 3);
+            tY.setAttribute("text-anchor", "end");
+            tY.setAttribute("font-size", "9");
+            tY.setAttribute("fill", "#94a3b8");
+            tY.textContent = val;
+            container.appendChild(tY);
+        }
+    }
+
+    function niceNum(num) {
+        return parseFloat(num.toFixed(2)).toString();
+    }
+
+    function update() {
+        const a = parseFloat(document.getElementById('sl-a').value);
+        const b = parseFloat(document.getElementById('sl-b').value);
+        const r = parseFloat(document.getElementById('sl-r').value);
+
+        document.getElementById('lbl-a').textContent = a > 0 ? `+${a}` : a;
+        document.getElementById('lbl-b').textContent = b > 0 ? `+${b}` : b;
+        document.getElementById('lbl-r').textContent = r;
+
+        const center = toSvg(a, b);
+        const rPx = r * pxScale;
+
+        // Ringjoon ja keskpunkt
+        const circle = document.getElementById('drawn-circle');
+        circle.setAttribute('cx', center.x);
+        circle.setAttribute('cy', center.y);
+        circle.setAttribute('r', rPx);
+
+        ctrlDot.setAttribute('cx', center.x);
+        ctrlDot.setAttribute('cy', center.y);
+
+        // Katkendjooned telgedele
+        const orig = toSvg(0, 0);
+        document.getElementById('dash-x').setAttribute('x1', center.x);
+        document.getElementById('dash-x').setAttribute('y1', center.y);
+        document.getElementById('dash-x').setAttribute('x2', center.x);
+        document.getElementById('dash-x').setAttribute('y2', orig.y);
+
+        document.getElementById('dash-y').setAttribute('x1', center.x);
+        document.getElementById('dash-y').setAttribute('y1', center.y);
+        document.getElementById('dash-y').setAttribute('x2', orig.x);
+        document.getElementById('dash-y').setAttribute('y2', center.y);
+
+        // Raadiuse joonis
+        const rEnd = toSvg(a + r, b);
+        document.getElementById('rad-line').setAttribute('x1', center.x);
+        document.getElementById('rad-line').setAttribute('y1', center.y);
+        document.getElementById('rad-line').setAttribute('x2', rEnd.x);
+        document.getElementById('rad-line').setAttribute('y2', rEnd.y);
+
+        const radTxt = document.getElementById('rad-txt');
+        radTxt.setAttribute('x', center.x + rPx / 2);
+        radTxt.setAttribute('y', center.y - 5);
+        radTxt.textContent = `R=${r}`;
+
+        // 1. KANOONILINE VÕRRAND
+        let pX = a === 0 ? "x²" : (a > 0 ? `(x - ${a})²` : `(x + ${Math.abs(a)})²`);
+        let pY = b === 0 ? "y²" : (b > 0 ? `(y - ${b})²` : `(y + ${Math.abs(b)})²`);
+        const rSq = niceNum(r * r);
+        document.getElementById('eq-canonical').innerHTML = `${pX} + ${pY} = ${rSq}`;
+
+        // 2. ÜLDVÕRRAND ARVUTUS (x² + y² + Dx + Ey + F = 0)
+        let D = -2 * a;
+        let E = -2 * b;
+        let F = a*a + b*b - r*r;
+
+        let dStr = D === 0 ? "" : (D > 0 ? ` + ${niceNum(D)}x` : ` - ${niceNum(Math.abs(D))}x`);
+        let eStr = E === 0 ? "" : (E > 0 ? ` + ${niceNum(E)}y` : ` - ${niceNum(Math.abs(E))}y`);
+        let fStr = F === 0 ? "" : (F > 0 ? ` + ${niceNum(F)}` : ` - ${niceNum(Math.abs(F))}`);
+
+        document.getElementById('eq-general').innerHTML = `x² + y²${dStr}${eStr}${fStr} = 0`;
+    }
+
+    // Lohistamise (drag-and-drop) funktsioonid
+    let dragging = false;
+
+    function getPos(e) {
+        const rect = mainSvg.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: cx - rect.left,
+            y: cy - rect.top
+        };
+    }
+
+    function startDrag(e) {
+        dragging = true;
+        e.preventDefault();
+    }
+
+    function drag(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const p = getPos(e);
+        const math = toMath(p.x, p.y);
+        
+        // Samm 0.5 täpsusega joondamine
+        let snapX = Math.round(math.mx * 2) / 2;
+        let snapY = Math.round(math.my * 2) / 2;
+
+        snapX = Math.max(-8, Math.min(8, snapX));
+        snapY = Math.max(-8, Math.min(8, snapY));
+
+        document.getElementById('sl-a').value = snapX;
+        document.getElementById('sl-b').value = snapY;
+        update();
+    }
+
+    function endDrag() {
+        dragging = false;
+    }
+
+    // Teooria ploki peitmine/näitamine
+    function toggleTheory() {
+        const block = document.getElementById('theory-block');
+        block.style.display = block.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Sündmuste kuulajad
+    document.getElementById('sl-a').addEventListener('input', update);
+    document.getElementById('sl-b').addEventListener('input', update);
+    document.getElementById('sl-r').addEventListener('input', update);
+
+    ctrlDot.addEventListener('mousedown', startDrag);
+    ctrlDot.addEventListener('touchstart', startDrag, { passive: false });
+
+    window.addEventListener('mousemove', drag);
+    window.addEventListener('touchmove', drag, { passive: false });
+
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    drawGrid();
+    update();
+</script>
+
+</body>
+</html>
