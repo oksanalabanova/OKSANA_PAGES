@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ringjoone võrrand</title>
+    <style>
+        .circle-explorer-card {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 850px;
+            margin: 15px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .circle-explorer-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            padding: 20px 25px;
+            text-align: center;
+        }
+
+        .circle-explorer-header h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .circle-explorer-header p {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .circle-explorer-body {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 25px;
+            gap: 25px;
+            background: #fafafa;
+        }
+
+        .circle-explorer-visual {
+            flex: 1 1 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+        }
+
+        .circle-explorer-controls {
+            flex: 1 1 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .interactive-svg-container {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .formula-container {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 18px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 5px;
+        }
+
+        .formula-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .slider-card {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            padding: 14px 18px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-left: 5px solid #cbd5e1;
+            transition: transform 0.2s;
+        }
+
+        .slider-card:hover {
+            transform: translateY(-1px);
+        }
+
+        .slider-card.x0 { border-left-color: #ef4444; }
+        .slider-card.y0 { border-left-color: #3b82f6; }
+        .slider-card.r  { border-left-color: #10b981; }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .slider-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-input-wrapper input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            background: #e2e8f0;
+            accent-color: #4f46e5;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+            color: #0f172a;
+        }
+
+        .explanation-card {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #1e3a8a;
+            line-height: 1.4;
+        }
+
+        .math-text {
+            font-family: "Times New Roman", Times, serif;
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        .drag-tip {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .drag-tip-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="circle-explorer-card">
+    <div class="circle-explorer-header">
+        <h2>Ringjoone võrrand</h2>
+        <p>Lohista ringjoone keskpunkti hiirega või muuda parameetreid allolevate liuguritega</p>
+    </div>
+
+    <div class="circle-explorer-body">
+        <div class="circle-explorer-visual">
+            <div class="interactive-svg-container">
+                <svg id="grid-svg" viewBox="0 0 400 400">
+                    <defs>
+                        <marker id="arrow-x" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155" />
+                        </marker>
+                        <marker id="arrow-y" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 1 10 L 5 0 L 9 10 z" fill="#334155" />
+                        </marker>
+                    </defs>
+
+                    <!-- Ruudustik -->
+                    <path id="grid-lines" stroke="#f1f5f9" stroke-width="1" />
+                    <path id="grid-lines-major" stroke="#e2e8f0" stroke-width="1" />
+
+                    <!-- Koordinaattelged -->
+                    <line x1="0" y1="200" x2="395" y2="200" stroke="#334155" stroke-width="2" marker-end="url(#arrow-x)" />
+                    <line x1="200" y1="400" x2="200" y2="5" stroke="#334155" stroke-width="2" marker-end="url(#arrow-y)" />
+
+                    <!-- Telgede tähised -->
+                    <text x="385" y="220" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="14" fill="#334155">x</text>
+                    <text x="185" y="18" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="14" fill="#334155">y</text>
+                    <text x="185" y="215" font-family="sans-serif" font-size="12" fill="#64748b">0</text>
+
+                    <!-- Dünaamilised telgede numbrid (täidab JS) -->
+                    <g id="grid-labels"></g>
+
+                    <!-- Keskpunkti projektsioonide punktiirjooned -->
+                    <line id="proj-x0" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 4" />
+                    <line id="proj-y0" stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="4 4" />
+
+                    <!-- Ringjoon -->
+                    <circle id="math-circle" fill="rgba(79, 70, 229, 0.08)" stroke="#4f46e5" stroke-width="3" />
+
+                    <!-- Raadiuse joon -->
+                    <line id="radius-line" stroke="#10b981" stroke-width="2.5" />
+                    <text id="radius-label" fill="#10b981" font-weight="bold" font-size="12" text-anchor="middle" font-family="sans-serif"></text>
+
+                    <!-- Lohistatav keskpunkt -->
+                    <circle id="center-dot" r="7" fill="#ef4444" stroke="#ffffff" stroke-width="2.5" style="cursor: move;" />
+                </svg>
+            </div>
+            <div class="drag-tip">
+                <div class="drag-tip-dot"></div>
+                <span>Keskpunkti saab lohistada sõrmega või hiirega!</span>
+            </div>
+        </div>
+
+        <div class="circle-explorer-controls">
+            <div class="formula-container">
+                <div class="formula-title">Ringjoone hetkevõrrand:</div>
+                <div id="formula-text"></div>
+            </div>
+
+            <!-- Liugur X0 -->
+            <div class="slider-card x0">
+                <div class="slider-header">
+                    <span>Nihe x-telje suunas (<span class="math-text">a</span>)</span>
+                    <span class="slider-value" id="val-x0">0</span>
+                </div>
+                <div class="slider-input-wrapper">
+                    <span>-8</span>
+                    <input type="range" id="slider-x0" min="-8" max="8" step="0.5" value="0">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <!-- Liugur Y0 -->
+            <div class="slider-card y0">
+                <div class="slider-header">
+                    <span>Nihe y-telje suunas (<span class="math-text">b</span>)</span>
+                    <span class="slider-value" id="val-y0">0</span>
+                </div>
+                <div class="slider-input-wrapper">
+                    <span>-8</span>
+                    <input type="range" id="slider-y0" min="-8" max="8" step="0.5" value="0">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <!-- Liugur Raadius -->
+            <div class="slider-card r">
+                <div class="slider-header">
+                    <span>Ringjoone raadius (<span class="math-text">R</span>)</span>
+                    <span class="slider-value" id="val-r">3</span>
+                </div>
+                <div class="slider-input-wrapper">
+                    <span>0.5</span>
+                    <input type="range" id="slider-r" min="0.5" max="8" step="0.1" value="3">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <strong>Tähelepanu:</strong>
+                <ul style="margin: 5px 0 0 18px; padding: 0;">
+                    <li>Võrrandis <span class="math-text">(x - a)<sup>2</sup> + (y - b)<sup>2</sup> = R<sup>2</sup></span> muutuvad keskpunkti koordinaatide ees olevad märgid vastupidiseks.</li>
+                    <li>Kui nihutada keskpunkt punkti <span class="math-text">(3, -4)</span>, saab võrrand kuju: <span class="math-text">(x - 3)<sup>2</sup> + (y + 4)<sup>2</sup> = R<sup>2</sup></span>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const svg = document.getElementById('grid-svg');
+    const centerDot = document.getElementById('center-dot');
+    const scale = 20; // 1 ühik = 20 pikslit
+
+    function mathToSvg(x, y) {
+        return {
+            x: 200 + x * scale,
+            y: 200 - y * scale
+        };
+    }
+
+    function svgToMath(x_svg, y_svg) {
+        return {
+            x: (x_svg - 200) / scale,
+            y: (200 - y_svg) / scale
+        };
+    }
+
+    function initGrid() {
+        const gridLines = document.getElementById('grid-lines');
+        const gridLinesMajor = document.getElementById('grid-lines-major');
+        let pathMinor = '';
+        let pathMajor = '';
+
+        for (let i = 20; i < 400; i += 20) {
+            if (i === 200) continue;
+            const isMajor = (i % 100 === 0);
+            const lineStr = `M ${i} 0 L ${i} 400 M 0 ${i} L 400 ${i} `;
+            if (isMajor) {
+                pathMajor += lineStr;
+            } else {
+                pathMinor += lineStr;
+            }
+        }
+        gridLines.setAttribute('d', pathMinor);
+        gridLinesMajor.setAttribute('d', pathMajor);
+
+        const gridLabels = document.getElementById('grid-labels');
+        for (let val = -8; val <= 8; val += 2) {
+            if (val === 0) continue;
+            
+            const posLabelX = mathToSvg(val, 0);
+            const textX = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            textX.setAttribute("x", posLabelX.x);
+            textX.setAttribute("y", posLabelX.y + 15);
+            textX.setAttribute("text-anchor", "middle");
+            textX.setAttribute("font-family", "sans-serif");
+            textX.setAttribute("font-size", "10");
+            textX.setAttribute("fill", "#64748b");
+            textX.textContent = val;
+            gridLabels.appendChild(textX);
+
+            const posLabelY = mathToSvg(0, val);
+            const textY = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            textY.setAttribute("x", posLabelY.x - 12);
+            textY.setAttribute("y", posLabelY.y + 3);
+            textY.setAttribute("text-anchor", "end");
+            textY.setAttribute("font-family", "sans-serif");
+            textY.setAttribute("font-size", "10");
+            textY.setAttribute("fill", "#64748b");
+            textY.textContent = val;
+            gridLabels.appendChild(textY);
+        }
+    }
+
+    function updateCircle() {
+        const x0 = parseFloat(document.getElementById('slider-x0').value);
+        const y0 = parseFloat(document.getElementById('slider-y0').value);
+        const r = parseFloat(document.getElementById('slider-r').value);
+
+        document.getElementById('val-x0').textContent = x0 > 0 ? `+${x0}` : x0;
+        document.getElementById('val-y0').textContent = y0 > 0 ? `+${y0}` : y0;
+        document.getElementById('val-r').textContent = r;
+
+        const centerSvg = mathToSvg(x0, y0);
+        const rSvg = r * scale;
+
+        const mathCircle = document.getElementById('math-circle');
+        mathCircle.setAttribute('cx', centerSvg.x);
+        mathCircle.setAttribute('cy', centerSvg.y);
+        mathCircle.setAttribute('r', rSvg);
+
+        centerDot.setAttribute('cx', centerSvg.x);
+        centerDot.setAttribute('cy', centerSvg.y);
+
+        const originSvg = mathToSvg(0, 0);
+        
+        const projX = document.getElementById('proj-x0');
+        projX.setAttribute('x1', centerSvg.x);
+        projX.setAttribute('y1', centerSvg.y);
+        projX.setAttribute('x2', centerSvg.x);
+        projX.setAttribute('y2', originSvg.y);
+
+        const projY = document.getElementById('proj-y0');
+        projY.setAttribute('x1', centerSvg.x);
+        projY.setAttribute('y1', centerSvg.y);
+        projY.setAttribute('x2', originSvg.x);
+        projY.setAttribute('y2', centerSvg.y);
+
+        const radiusEndSvg = mathToSvg(x0 + r, y0);
+        const radiusLine = document.getElementById('radius-line');
+        radiusLine.setAttribute('x1', centerSvg.x);
+        radiusLine.setAttribute('y1', centerSvg.y);
+        radiusLine.setAttribute('x2', radiusEndSvg.x);
+        radiusLine.setAttribute('y2', radiusEndSvg.y);
+
+        const radiusLabel = document.getElementById('radius-label');
+        radiusLabel.setAttribute('x', centerSvg.x + rSvg / 2);
+        radiusLabel.setAttribute('y', centerSvg.y - 6);
+        radiusLabel.textContent = `R = ${r}`;
+
+        let xPart = "";
+        if (x0 === 0) {
+            xPart = '<span class="math-text">x</span><sup>2</sup>';
+        } else if (x0 > 0) {
+            xPart = `(<span class="math-text">x</span> - ${x0})<sup>2</sup>`;
+        } else {
+            xPart = `(<span class="math-text">x</span> + ${Math.abs(x0)})<sup>2</sup>`;
+        }
+
+        let yPart = "";
+        if (y0 === 0) {
+            yPart = '<span class="math-text">y</span><sup>2</sup>';
+        } else if (y0 > 0) {
+            yPart = `(<span class="math-text">y</span> - ${y0})<sup>2</sup>`;
+        } else {
+            yPart = `(<span class="math-text">y</span> + ${Math.abs(y0)})<sup>2</sup>`;
+        }
+
+        const rSquared = (r * r).toFixed(2).replace(/\.00$/, '');
+        const rDisplay = r.toString();
+
+        const formulaText = `${xPart} + ${yPart} = <span style="color: #10b981; font-weight: bold;">${rDisplay}<sup>2</sup></span><br><div style="font-size: 0.95em; color: #94a3b8; margin-top: 5px;">${xPart} + ${yPart} = <span style="color: #10b981; font-weight: bold;">${rSquared}</span></div>`;
+        document.getElementById('formula-text').innerHTML = formulaText;
+    }
+
+    let activeDrag = false;
+
+    function getMousePosition(evt) {
+        const rect = svg.getBoundingClientRect();
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    function startDrag(evt) {
+        activeDrag = true;
+        evt.preventDefault();
+    }
+
+    function drag(evt) {
+        if (!activeDrag) return;
+        evt.preventDefault();
+        
+        const coords = getMousePosition(evt);
+        let mathCoords = svgToMath(coords.x, coords.y);
+
+        let xSnap = Math.round(mathCoords.x * 2) / 2;
+        let ySnap = Math.round(mathCoords.y * 2) / 2;
+
+        xSnap = Math.max(-8, Math.min(8, xSnap));
+        ySnap = Math.max(-8, Math.min(8, ySnap));
+
+        document.getElementById('slider-x0').value = xSnap;
+        document.getElementById('slider-y0').value = ySnap;
+
+        updateCircle();
+    }
+
+    function endDrag(evt) {
+        activeDrag = false;
+    }
+
+    document.getElementById('slider-x0').addEventListener('input', updateCircle);
+    document.getElementById('slider-y0').addEventListener('input', updateCircle);
+    document.getElementById('slider-r').addEventListener('input', updateCircle);
+
+    centerDot.addEventListener('mousedown', startDrag);
+    centerDot.addEventListener('touchstart', startDrag, { passive: false });
+
+    window.addEventListener('mousemove', drag);
+    window.addEventListener('touchmove', drag, { passive: false });
+
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    initGrid();
+    updateCircle();
+</script>
+
+</body>
+</html>
