@@ -1,0 +1,715 @@
+<style>
+        .huperbool-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 780px;
+            margin: 10px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .huperbool-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: #ffffff;
+            padding: 12px 18px;
+            text-align: center;
+        }
+
+        .huperbool-header h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .huperbool-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .huperbool-body {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 15px;
+            gap: 15px;
+            background: #fafafa;
+        }
+
+        .huperbool-visual {
+            flex: 1 1 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #edf2f7;
+        }
+
+        .huperbool-controls {
+            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .svg-wrapper {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+        }
+
+        .direction-toggle-group {
+            display: flex;
+            gap: 5px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #cbd5e1;
+            width: 100%;
+        }
+
+        .dir-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .dir-btn.active {
+            background: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15);
+        }
+
+        .formulas-card {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .formula-line {
+            margin-bottom: 6px;
+            border-bottom: 1px dashed #1e293b;
+            padding-bottom: 4px;
+        }
+        .formula-line:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .formula-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+
+        .formula-math-flex {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            padding: 0 4px;
+        }
+
+        .numerator {
+            border-bottom: 1.5px solid #818cf8;
+            padding-bottom: 1px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .denominator {
+            padding-top: 2px;
+            text-align: center;
+            width: 100%;
+            color: #818cf8;
+            font-weight: bold;
+        }
+
+        .slider-item {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 4px;
+            accent-color: #4f46e5;
+            cursor: pointer;
+        }
+
+        .val-num {
+            font-family: monospace;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .theory-toggle {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            color: #334155;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theory-toggle:hover {
+            background: #e2e8f0;
+        }
+
+        .theory-content {
+            display: none;
+            background: #f5f3ff;
+            border-left: 3px solid #4f46e5;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            color: #3730a3;
+            line-height: 1.35;
+            margin-top: 5px;
+        }
+
+        .math-var {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-weight: bold;
+        }
+</style>
+
+<div class="huperbool-container">
+    <div class="huperbool-header">
+        <h3>Hüperbooli kanooniline ja üldvõrrand</h3>
+        <p>Muuda reaal- ja kujuteldava pooltelje väärtusi, et näha asümptootide ja harude muutust</p>
+    </div>
+
+    <div class="huperbool-body">
+        <div class="huperbool-visual">
+            <div class="direction-toggle-group">
+                <button id="btn-horiz" class="dir-btn active" onclick="setDirection(true)">Horisontaalne</button>
+                <button id="btn-verti" class="dir-btn" onclick="setDirection(false)">Vertikaalne</button>
+            </div>
+
+            <div class="svg-wrapper">
+                <svg id="canvas-svg" viewBox="0 0 400 400">
+                    <defs>
+                        <marker id="ar-x" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+                        </marker>
+                        <marker id="ar-y" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 1 10 L 5 0 L 9 10 z" fill="#475569" />
+                        </marker>
+                    </defs>
+
+                    <path id="lines-grid" stroke="#f1f5f9" stroke-width="1" />
+                    <path id="lines-grid-major" stroke="#e2e8f0" stroke-width="1" />
+
+                    <line x1="0" y1="200" x2="395" y2="200" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-x)" />
+                    <line x1="200" y1="400" x2="200" y2="5" stroke="#475569" stroke-width="1.5" marker-end="url(#ar-y)" />
+
+                    <text x="384" y="220" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="16" fill="#475569">x</text>
+                    <text x="182" y="18" font-family="Times New Roman, serif" font-style="italic" font-weight="bold" font-size="16" fill="#475569">y</text>
+                    <text x="187" y="215" font-family="sans-serif" font-size="12" fill="#94a3b8">0</text>
+
+                    <g id="axes-numbers"></g>
+
+                    <rect id="char-rect" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4" />
+
+                    <line id="asymptote-1" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 2" />
+                    <line id="asymptote-2" stroke="#64748b" stroke-width="1.2" stroke-dasharray="2 2" />
+
+                    <path id="branch-1" fill="none" stroke="#4f46e5" stroke-width="3" />
+                    <path id="branch-2" fill="none" stroke="#4f46e5" stroke-width="3" />
+
+                    <line id="line-a" stroke="#10b981" stroke-width="2.2" />
+                    <text id="txt-a" fill="#059669" font-weight="bold" font-size="13" text-anchor="middle" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"></text>
+
+                    <line id="line-b" stroke="#f59e0b" stroke-width="2.2" />
+                    <text id="txt-b" fill="#b45309" font-weight="bold" font-size="13" text-anchor="middle" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"></text>
+
+                    <circle id="focus-1" r="5" fill="#a855f7" stroke="#ffffff" stroke-width="1.5" />
+                    <text id="lbl-f1" fill="#7e22ce" font-size="13" font-weight="bold" text-anchor="middle" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round">F₁</text>
+                    <circle id="focus-2" r="5" fill="#a855f7" stroke="#ffffff" stroke-width="1.5" />
+                    <text id="lbl-f2" fill="#7e22ce" font-size="13" font-weight="bold" text-anchor="middle" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round">F₂</text>
+
+                    <circle cx="200" cy="200" r="5.5" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+                    <text x="186" y="189" fill="#dc2626" font-size="13" font-weight="bold" font-family="sans-serif" paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round">O(0;0)</text>
+                </svg>
+            </div>
+        </div>
+
+        <div class="huperbool-controls">
+
+            <div class="formulas-card">
+                <div class="formula-line">
+                    <div class="formula-label">Kanooniline võrrand:</div>
+                    <div class="formula-math-flex" id="eq-canonical"></div>
+                </div>
+                <div class="formula-line">
+                    <div class="formula-label">Üldvõrrand (Ax² - Cy² + F = 0):</div>
+                    <div id="eq-general" style="font-family: monospace; font-size: 1.05rem; color: #c084fc; font-weight: bold; margin-top: 4px;"></div>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span id="lbl-title-a">Reaalpooltelg (<span class="math-var">a</span>)</span>
+                    <span class="val-num" id="lbl-slider-a">3</span>
+                </div>
+                <div class="slider-row">
+                    <span>1</span>
+                    <input type="range" id="sl-a" min="1" max="8" step="0.5" value="3">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <span id="lbl-title-b">Kujuteldav pooltelg (<span class="math-var">b</span>)</span>
+                    <span class="val-num" id="lbl-slider-b">2</span>
+                </div>
+                <div class="slider-row">
+                    <span>1</span>
+                    <input type="range" id="sl-b" min="1" max="8" step="0.5" value="2">
+                    <span>8</span>
+                </div>
+            </div>
+
+            <div>
+                <button class="theory-toggle" onclick="toggleTheory()">
+                    <span>ℹ️ Kuidas kanoonilisest saab üldvõrrand?</span>
+                    <span id="theory-arrow">▼</span>
+                </button>
+                <div class="theory-content" id="theory-block">
+                    <strong>1. Võta kanooniline võrrand:</strong><br>
+                    <div id="theory-canonical-text" style="margin: 4px 0; text-align: center;"></div>
+                    <strong>2. Korruta läbi ühise nimetajaga <span class="math-var">a²b²</span>:</strong><br>
+                    <div id="theory-mult-text" style="margin: 4px 0; text-align: center; font-weight: bold;"></div>
+                    <strong>3. Koonda üldkujule:</strong><br>
+                    <div style="margin: 4px 0; text-align: center; font-weight: bold; color: #c084fc;">
+                        <span id="theory-general-layout"></span> = 0
+                    </div>
+                    Kuna keskpunkt on koordinaatide alguspunktis (0;0), on lineaarsed liikmed <span class="math-var">Dx = 0</span> ja <span class="math-var">Ey = 0</span>.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const pxScale = 20;
+    let isHorizontal = true;
+
+    function toSvg(mx, my) {
+        return { x: 200 + mx * pxScale, y: 200 - my * pxScale };
+    }
+
+    function drawGrid() {
+        const grid = document.getElementById('lines-grid');
+        const gridMajor = document.getElementById('lines-grid-major');
+        let dMinor = '';
+        let dMajor = '';
+
+        for (let i = 20; i < 400; i += 20) {
+            if (i === 200) continue;
+            const line = `M ${i} 0 L ${i} 400 M 0 ${i} L 400 ${i} `;
+            if (i % 100 === 0) dMajor += line;
+            else dMinor += line;
+        }
+        grid.setAttribute('d', dMinor);
+        gridMajor.setAttribute('d', dMajor);
+
+        const container = document.getElementById('axes-numbers');
+        for (let val = -8; val <= 8; val += 2) {
+            if (val === 0) continue;
+            const pX = toSvg(val, 0);
+            const tX = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tX.setAttribute("x", pX.x);
+            tX.setAttribute("y", pX.y + 15);
+            tX.setAttribute("text-anchor", "middle");
+            tX.setAttribute("font-size", "11");
+            tX.setAttribute("fill", "#64748b");
+            tX.setAttribute("paint-order", "stroke");
+            tX.setAttribute("stroke", "#ffffff");
+            tX.setAttribute("stroke-width", "3");
+            tX.textContent = val;
+            container.appendChild(tX);
+
+            const pY = toSvg(0, val);
+            const tY = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            tY.setAttribute("x", pY.x - 9);
+            tY.setAttribute("y", pY.y + 4);
+            tY.setAttribute("text-anchor", "end");
+            tY.setAttribute("font-size", "11");
+            tY.setAttribute("fill", "#64748b");
+            tY.setAttribute("paint-order", "stroke");
+            tY.setAttribute("stroke", "#ffffff");
+            tY.setAttribute("stroke-width", "3");
+            tY.textContent = val;
+            container.appendChild(tY);
+        }
+    }
+
+    function niceNum(num) {
+        return parseFloat(num.toFixed(2)).toString();
+    }
+
+    function setDirection(horiz) {
+        isHorizontal = horiz;
+        document.getElementById('btn-horiz').className = isHorizontal ? 'dir-btn active' : 'dir-btn';
+        document.getElementById('btn-verti').className = !isHorizontal ? 'dir-btn active' : 'dir-btn';
+
+        if (isHorizontal) {
+            document.getElementById('lbl-title-a').innerHTML = 'Reaalpooltelg (<span class="math-var">a</span>)';
+            document.getElementById('lbl-title-b').innerHTML = 'Kujuteldav pooltelg (<span class="math-var">b</span>)';
+        } else {
+            document.getElementById('lbl-title-a').innerHTML = 'Reaalpooltelg (<span class="math-var">a</span> - y-teljel)';
+            document.getElementById('lbl-title-b').innerHTML = 'Kujuteldav pooltelg (<span class="math-var">b</span> - x-teljel)';
+        }
+
+        update();
+    }
+
+    function update() {
+        const a = parseFloat(document.getElementById('sl-a').value);
+        const b = parseFloat(document.getElementById('sl-b').value);
+
+        document.getElementById('lbl-slider-a').textContent = a;
+        document.getElementById('lbl-slider-b').textContent = b;
+
+        const center = { x: 200, y: 200 };
+        const aPx = a * pxScale;
+        const bPx = b * pxScale;
+
+        const charRect = document.getElementById('char-rect');
+        const asymp1 = document.getElementById('asymptote-1');
+        const asymp2 = document.getElementById('asymptote-2');
+
+        if (isHorizontal) {
+            charRect.setAttribute('x', center.x - aPx);
+            charRect.setAttribute('y', center.y - bPx);
+            charRect.setAttribute('width', aPx * 2);
+            charRect.setAttribute('height', bPx * 2);
+
+            const p1_left = toSvg(-10, -(b/a)*(-10));
+            const p1_right = toSvg(10, -(b/a)*(10));
+            asymp1.setAttribute('x1', p1_left.x); asymp1.setAttribute('y1', p1_left.y);
+            asymp1.setAttribute('x2', p1_right.x); asymp1.setAttribute('y2', p1_right.y);
+
+            const p2_left = toSvg(-10, (b/a)*(-10));
+            const p2_right = toSvg(10, (b/a)*(10));
+            asymp2.setAttribute('x1', p2_left.x); asymp2.setAttribute('y1', p2_left.y);
+            asymp2.setAttribute('x2', p2_right.x); asymp2.setAttribute('y2', p2_right.y);
+
+            document.getElementById('line-a').setAttribute('x1', center.x);
+            document.getElementById('line-a').setAttribute('y1', center.y);
+            document.getElementById('line-a').setAttribute('x2', center.x + aPx);
+            document.getElementById('line-a').setAttribute('y2', center.y);
+
+            const txtA = document.getElementById('txt-a');
+            txtA.setAttribute('x', center.x + aPx / 2);
+            txtA.setAttribute('y', center.y - 6);
+            txtA.textContent = `a=${a}`;
+
+            document.getElementById('line-b').setAttribute('x1', center.x + aPx);
+            document.getElementById('line-b').setAttribute('y1', center.y);
+            document.getElementById('line-b').setAttribute('x2', center.x + aPx);
+            document.getElementById('line-b').setAttribute('y2', center.y - bPx);
+
+            const txtB = document.getElementById('txt-b');
+            txtB.setAttribute('x', center.x + aPx + 20);
+            txtB.setAttribute('y', center.y - bPx / 2);
+            txtB.textContent = `b=${b}`;
+
+        } else {
+            charRect.setAttribute('x', center.x - bPx);
+            charRect.setAttribute('y', center.y - aPx);
+            charRect.setAttribute('width', bPx * 2);
+            charRect.setAttribute('height', aPx * 2);
+
+            const p1_left = toSvg(-10, -(a/b)*(-10));
+            const p1_right = toSvg(10, -(a/b)*(10));
+            asymp1.setAttribute('x1', p1_left.x); asymp1.setAttribute('y1', p1_left.y);
+            asymp1.setAttribute('x2', p1_right.x); asymp1.setAttribute('y2', p1_right.y);
+
+            const p2_left = toSvg(-10, (a/b)*(-10));
+            const p2_right = toSvg(10, (a/b)*(10));
+            asymp2.setAttribute('x1', p2_left.x); asymp2.setAttribute('y1', p2_left.y);
+            asymp2.setAttribute('x2', p2_right.x); asymp2.setAttribute('y2', p2_right.y);
+
+            document.getElementById('line-a').setAttribute('x1', center.x);
+            document.getElementById('line-a').setAttribute('y1', center.y);
+            document.getElementById('line-a').setAttribute('x2', center.x);
+            document.getElementById('line-a').setAttribute('y2', center.y - aPx);
+
+            const txtA = document.getElementById('txt-a');
+            txtA.setAttribute('x', center.x - 18);
+            txtA.setAttribute('y', center.y - aPx / 2);
+            txtA.textContent = `a=${a}`;
+
+            document.getElementById('line-b').setAttribute('x1', center.x);
+            document.getElementById('line-b').setAttribute('y1', center.y - aPx);
+            document.getElementById('line-b').setAttribute('x2', center.x + bPx);
+            document.getElementById('line-b').setAttribute('y2', center.y - aPx);
+
+            const txtB = document.getElementById('txt-b');
+            txtB.setAttribute('x', center.x + bPx / 2);
+            txtB.setAttribute('y', center.y - aPx - 8);
+            txtB.textContent = `b=${b}`;
+        }
+
+        const cVal = Math.sqrt(a * a + b * b);
+        const cPx = cVal * pxScale;
+        const f1 = document.getElementById('focus-1');
+        const f2 = document.getElementById('focus-2');
+        const lblF1 = document.getElementById('lbl-f1');
+        const lblF2 = document.getElementById('lbl-f2');
+
+        if (isHorizontal) {
+            f1.setAttribute('cx', center.x - cPx);
+            f1.setAttribute('cy', center.y);
+            lblF1.setAttribute('x', center.x - cPx);
+            lblF1.setAttribute('y', center.y + 18);
+
+            f2.setAttribute('cx', center.x + cPx);
+            f2.setAttribute('cy', center.y);
+            lblF2.setAttribute('x', center.x + cPx);
+            lblF2.setAttribute('y', center.y + 18);
+        } else {
+            f1.setAttribute('cx', center.x);
+            f1.setAttribute('cy', center.y + cPx);
+            lblF1.setAttribute('x', center.x + 18);
+            lblF1.setAttribute('y', center.y + cPx + 4);
+
+            f2.setAttribute('cx', center.x);
+            f2.setAttribute('cy', center.y - cPx);
+            lblF2.setAttribute('x', center.x + 18);
+            lblF2.setAttribute('y', center.y - cPx + 4);
+        }
+
+        const branch1 = document.getElementById('branch-1');
+        const branch2 = document.getElementById('branch-2');
+        let d1 = "";
+        let d2 = "";
+
+        if (isHorizontal) {
+            for (let yVal = -10; yVal <= 10; yVal += 0.1) {
+                const term = 1 + (yVal * yVal) / (b * b);
+                const xDiff = a * Math.sqrt(term);
+                const xLeft = -xDiff;
+                const xRight = xDiff;
+
+                const ptL = toSvg(xLeft, yVal);
+                const ptR = toSvg(xRight, yVal);
+
+                if (yVal === -10) {
+                    d1 += `M ${ptL.x} ${ptL.y}`;
+                    d2 += `M ${ptR.x} ${ptR.y}`;
+                } else {
+                    if (ptL.x >= 0 && ptL.x <= 400 && ptL.y >= 0 && ptL.y <= 400) {
+                        d1 += d1.startsWith('M') ? ` L ${ptL.x} ${ptL.y}` : `M ${ptL.x} ${ptL.y}`;
+                    }
+                    if (ptR.x >= 0 && ptR.x <= 400 && ptR.y >= 0 && ptR.y <= 400) {
+                        d2 += d2.startsWith('M') ? ` L ${ptR.x} ${ptR.y}` : `M ${ptR.x} ${ptR.y}`;
+                    }
+                }
+            }
+        } else {
+            for (let xVal = -10; xVal <= 10; xVal += 0.1) {
+                const term = 1 + (xVal * xVal) / (b * b);
+                const yDiff = a * Math.sqrt(term);
+                const yBottom = -yDiff;
+                const yTop = yDiff;
+
+                const ptB = toSvg(xVal, yBottom);
+                const ptT = toSvg(xVal, yTop);
+
+                if (xVal === -10) {
+                    d1 += `M ${ptB.x} ${ptB.y}`;
+                    d2 += `M ${ptT.x} ${ptT.y}`;
+                } else {
+                    if (ptB.x >= 0 && ptB.x <= 400 && ptB.y >= 0 && ptB.y <= 400) {
+                        d1 += d1.startsWith('M') ? ` L ${ptB.x} ${ptB.y}` : `M ${ptB.x} ${ptB.y}`;
+                    }
+                    if (ptT.x >= 0 && ptT.x <= 400 && ptT.y >= 0 && ptT.y <= 400) {
+                        d2 += d2.startsWith('M') ? ` L ${ptT.x} ${ptT.y}` : `M ${ptT.x} ${ptT.y}`;
+                    }
+                }
+            }
+        }
+
+        branch1.setAttribute('d', d1);
+        branch2.setAttribute('d', d2);
+
+        const aSq = a * a;
+        const bSq = b * b;
+
+        const eqCanonical = document.getElementById('eq-canonical');
+        if (isHorizontal) {
+            eqCanonical.innerHTML = `
+                <span class="fraction"><span class="numerator">x²</span><span class="denominator">${aSq}</span></span>
+                <span>-</span>
+                <span class="fraction"><span class="numerator">y²</span><span class="denominator">${bSq}</span></span>
+                <span>= 1</span>
+            `;
+        } else {
+            eqCanonical.innerHTML = `
+                <span>-</span>
+                <span class="fraction"><span class="numerator">x²</span><span class="denominator">${bSq}</span></span>
+                <span>+</span>
+                <span class="fraction"><span class="numerator">y²</span><span class="denominator">${aSq}</span></span>
+                <span>= 1</span>
+            `;
+        }
+
+        let A = bSq;
+        let C = aSq;
+        let F_coeff = -aSq * bSq;
+
+        const pdf_gcd = (x, y) => (!y ? x : pdf_gcd(y, x % y));
+        const findGCDOfArray = (arr) => arr.reduce((a, b) => pdf_gcd(a, b));
+
+        let scaled_A = Math.round(A * 4);
+        let scaled_C = Math.round(C * 4);
+        let scaled_F = Math.round(F_coeff * 4);
+
+        let div = 1;
+        try {
+            div = Math.abs(findGCDOfArray([scaled_A, scaled_C, scaled_F]));
+            if (div > 0) {
+                A = (scaled_A / div);
+                C = (scaled_C / div);
+                F_coeff = (scaled_F / div);
+            }
+        } catch(err) {}
+
+        let aTerm = A === 1 ? "x²" : `${niceNum(A)}x²`;
+        let cTerm = C === 1 ? "y²" : `${niceNum(C)}y²`;
+        let fTerm = F_coeff === 0 ? "" : (F_coeff > 0 ? ` + ${niceNum(F_coeff)}` : ` - ${niceNum(Math.abs(F_coeff))}`);
+
+        const eqGeneral = document.getElementById('eq-general');
+        if (isHorizontal) {
+            eqGeneral.innerHTML = `${aTerm} - ${cTerm}${fTerm} = 0`;
+        } else {
+            let vert_A = aSq;
+            let vert_C = bSq;
+            let vert_F = -aSq * bSq;
+            let s_A = Math.round(vert_A * 4);
+            let s_C = Math.round(vert_C * 4);
+            let s_F = Math.round(vert_F * 4);
+            let d_v = 1;
+            try {
+                d_v = Math.abs(findGCDOfArray([s_A, s_C, s_F]));
+                if (d_v > 0) {
+                    vert_A = s_A / d_v;
+                    vert_C = s_C / d_v;
+                    vert_F = s_F / d_v;
+                }
+            } catch(e){}
+
+            let v_aTerm = vert_A === 1 ? "x²" : `${niceNum(vert_A)}x²`;
+            let v_cTerm = vert_C === 1 ? "y²" : `${niceNum(vert_C)}y²`;
+            let v_fTerm = vert_F === 0 ? "" : (vert_F > 0 ? ` + ${niceNum(vert_F)}` : ` - ${niceNum(Math.abs(vert_F))}`);
+
+            eqGeneral.innerHTML = `-${v_aTerm} + ${v_cTerm}${v_fTerm} = 0`;
+        }
+
+        updateTheoryBlock(aSq, bSq, A, C, F_coeff);
+    }
+
+    function updateTheoryBlock(aSq, bSq, A, C, F_coeff) {
+        const theoryCanonical = document.getElementById('theory-canonical-text');
+        const theoryMult = document.getElementById('theory-mult-text');
+        const theoryGeneral = document.getElementById('theory-general-layout');
+
+        if (isHorizontal) {
+            theoryCanonical.innerHTML = `
+                <span class="fraction"><span class="numerator">x²</span><span class="denominator">${aSq}</span></span> -
+                <span class="fraction"><span class="numerator">y²</span><span class="denominator">${bSq}</span></span> = 1
+            `;
+            theoryMult.innerHTML = `${bSq}x² - ${aSq}y² = ${aSq * bSq}`;
+            theoryGeneral.innerHTML = `Ax² - Cy² + F`;
+        } else {
+            theoryCanonical.innerHTML = `
+                - <span class="fraction"><span class="numerator">x²</span><span class="denominator">${bSq}</span></span> +
+                <span class="fraction"><span class="numerator">y²</span><span class="denominator">${aSq}</span></span> = 1
+            `;
+            theoryMult.innerHTML = `-${aSq}x² + ${bSq}y² = ${aSq * bSq}`;
+            theoryGeneral.innerHTML = `-Ax² + Cy² + F`;
+        }
+    }
+
+    function toggleTheory() {
+        const block = document.getElementById('theory-block');
+        const arrow = document.getElementById('theory-arrow');
+        if (block.style.display === 'block') {
+            block.style.display = 'none';
+            arrow.textContent = '▼';
+        } else {
+            block.style.display = 'block';
+            arrow.textContent = '▲';
+        }
+    }
+
+    document.getElementById('sl-a').addEventListener('input', update);
+    document.getElementById('sl-b').addEventListener('input', update);
+
+    drawGrid();
+    setDirection(true);
+</script>
