@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<title>Determinant 3×3</title>
+<style>
+  :root{
+    --bg:#12161d;
+    --panel:#1b212b;
+    --line:#e9ebef;
+    --num:#e9ebef;
+    --dim:#3a4252;
+    --pivot:#e0a53d;
+    --red:#e0503f;
+    --minor:#4fb3a6;
+    --pivot-glow: rgba(224,165,61,.35);
+    --minor-glow: rgba(79,179,166,.30);
+    --track:#232b38;
+    --cell:60px;
+  }
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: 'Palatino Linotype','Book Antiqua',Georgia,serif;
+  }
+  .wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:40px;
+    padding:44px 32px;
+  }
+  .stage{
+    display:flex;
+    align-items:center;
+    gap:52px;
+  }
+
+  .bars{
+    display:flex;
+    align-items:center;
+  }
+  .bar{
+    width:2.5px;
+    align-self:stretch;
+    background:var(--line);
+  }
+  .grid{
+    position:relative;
+    display:grid;
+    margin:0 14px;
+  }
+  .cell{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.35rem;
+    font-style:italic;
+    color:var(--num);
+    transition: color .3s ease, opacity .3s ease, transform .3s ease;
+    z-index:2;
+  }
+  .cell.pivot{
+    color:var(--pivot);
+    text-shadow:0 0 10px var(--pivot-glow);
+  }
+  .cell.gone{
+    opacity:.22;
+  }
+
+  .crossline{
+    position:absolute;
+    background:var(--red);
+    opacity:.9;
+    pointer-events:none;
+    z-index:1;
+    transition: top .3s ease, left .3s ease;
+  }
+  .crossline.h{ height:3px; left:0; right:0; }
+  .crossline.v{ width:3px; top:0; bottom:0; }
+
+  .connector{
+    width:36px;
+    height:2px;
+    background:linear-gradient(90deg, var(--dim), var(--minor));
+    opacity:.7;
+  }
+
+  .grid2 .cell{
+    opacity:0;
+    transform:translateY(8px) scale(.9);
+  }
+  .grid2 .cell.show{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    transition: opacity .45s ease .1s, transform .45s ease .1s;
+    color:var(--minor);
+  }
+
+  .controls{
+    display:flex;
+    gap:50px;
+  }
+  .ctrl{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .ctrl label{
+    font-style:italic;
+    font-size:1.15rem;
+    color:var(--num);
+    width:16px;
+    text-align:center;
+  }
+  input[type=range]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:150px;
+    height:4px;
+    border-radius:2px;
+    background:var(--track);
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:var(--red);
+    border:2px solid var(--bg);
+    box-shadow:0 0 0 2px var(--red);
+    cursor:pointer;
+    transition: transform .15s ease;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{ transform:scale(1.12); }
+  input[type=range]::-moz-range-thumb{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:var(--red);
+    border:2px solid var(--bg);
+    box-shadow:0 0 0 2px var(--red);
+    cursor:pointer;
+  }
+  input[type=range]::-moz-range-track{
+    height:4px;
+    border-radius:2px;
+    background:var(--track);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="stage">
+    <div class="bars">
+      <div class="bar"></div>
+      <div class="grid" id="grid3"></div>
+      <div class="bar"></div>
+    </div>
+
+    <div class="connector"></div>
+
+    <div class="bars">
+      <div class="bar"></div>
+      <div class="grid grid2" id="grid2"></div>
+      <div class="bar"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl">
+      <label><i>i</i></label>
+      <input type="range" id="sliderI" min="1" max="3" value="1" step="1">
+    </div>
+    <div class="ctrl">
+      <label><i>j</i></label>
+      <input type="range" id="sliderJ" min="1" max="3" value="1" step="1">
+    </div>
+  </div>
+</div>
+
+<script>
+  const N = 3;
+  const CELL = 60;
+
+  const M = [
+    [5, -2, 3],
+    [0,  4,-1],
+    [-6, 1, 7]
+  ];
+
+  const grid3 = document.getElementById('grid3');
+  grid3.style.gridTemplateColumns = `repeat(${N}, ${CELL}px)`;
+  grid3.style.gridTemplateRows = `repeat(${N}, ${CELL}px)`;
+  grid3.style.width = (N*CELL) + 'px';
+  grid3.style.height = (N*CELL) + 'px';
+
+  const grid2 = document.getElementById('grid2');
+  grid2.style.gridTemplateColumns = `repeat(2, ${CELL}px)`;
+  grid2.style.gridTemplateRows = `repeat(2, ${CELL}px)`;
+  grid2.style.width = (2*CELL) + 'px';
+  grid2.style.height = (2*CELL) + 'px';
+
+  const cells3 = [];
+  for(let r=1;r<=N;r++){
+    for(let c=1;c<=N;c++){
+      const div = document.createElement('div');
+      div.className = 'cell';
+      div.textContent = M[r-1][c-1];
+      div.dataset.r = r;
+      div.dataset.c = c;
+      grid3.appendChild(div);
+      cells3.push(div);
+    }
+  }
+
+  const lineH = document.createElement('div');
+  lineH.className = 'crossline h';
+  const lineV = document.createElement('div');
+  lineV.className = 'crossline v';
+  grid3.appendChild(lineH);
+  grid3.appendChild(lineV);
+
+  const cells2 = [];
+  for(let k=0;k<4;k++){
+    const div = document.createElement('div');
+    div.className = 'cell';
+    cells2.push(div);
+    grid2.appendChild(div);
+  }
+
+  function center(idx){ return (idx-1)*CELL + CELL/2; }
+
+  const sliderI = document.getElementById('sliderI');
+  const sliderJ = document.getElementById('sliderJ');
+
+  function update(){
+    const pi = +sliderI.value;
+    const pj = +sliderJ.value;
+
+    lineH.style.top = (center(pi) - 1.5) + 'px';
+    lineV.style.left = (center(pj) - 1.5) + 'px';
+
+    cells3.forEach(cell=>{
+      const r = +cell.dataset.r, c = +cell.dataset.c;
+      cell.classList.remove('pivot','gone');
+      if(r===pi && c===pj) cell.classList.add('pivot');
+      else if(r===pi || c===pj) cell.classList.add('gone');
+    });
+
+    let k=0;
+    for(let r=1;r<=N;r++){
+      for(let c=1;c<=N;c++){
+        if(r!==pi && c!==pj){
+          cells2[k].textContent = M[r-1][c-1];
+          k++;
+        }
+      }
+    }
+    cells2.forEach(c=>c.classList.remove('show'));
+    requestAnimationFrame(()=>{
+      cells2.forEach(c=>c.classList.add('show'));
+    });
+  }
+
+  sliderI.addEventListener('input', update);
+  sliderJ.addEventListener('input', update);
+  update();
+</script>
+
+</body>
+</html>
