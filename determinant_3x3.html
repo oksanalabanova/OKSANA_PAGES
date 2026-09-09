@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kolmerealise determinandi leidmine (Sarrusi reegel)</title>
+<style>
+    .det-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        max-width: 820px;
+        margin: 10px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .det-header {
+        background: linear-gradient(135deg, #b45309 0%, #7c2d12 100%);
+        color: #ffffff;
+        padding: 12px 18px;
+        text-align: center;
+    }
+
+    .det-header h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .det-header p {
+        margin: 0;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .det-body {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 15px;
+        gap: 15px;
+        background: #fafafa;
+    }
+
+    .det-visual {
+        flex: 1 1 380px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #edf2f7;
+    }
+
+    .det-controls {
+        flex: 1 1 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .svg-wrapper {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .anim-controls {
+        display: flex;
+        gap: 5px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        flex: 1;
+        border: 1px solid #cbd5e1;
+        background: #f1f5f9;
+        padding: 7px 8px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s;
+        text-align: center;
+    }
+    .btn:hover { background: #e2e8f0; }
+
+    .btn.primary {
+        background: #b45309;
+        color: #ffffff;
+        border-color: #b45309;
+    }
+    .btn.primary:hover { background: #92400e; }
+
+    .matrix-svg text {
+        font-family: "Times New Roman", Times, serif;
+        font-style: italic;
+        font-weight: bold;
+    }
+
+    .diag-line {
+        fill: none;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.55s ease-in-out;
+    }
+
+    .diag-pos { stroke-width: 3.4; }
+    .diag-neg { stroke-width: 3.4; }
+
+    .val-circle { fill: #ffffff; stroke-width: 2.2; }
+    .val-circle.orig { stroke: #334155; }
+    .val-circle.copy { stroke: #94a3b8; stroke-dasharray: 3 2; opacity: 0.92; }
+
+    .val-text {
+        fill: #0f172a;
+        font-size: 19px;
+        text-anchor: middle;
+        dominant-baseline: central;
+    }
+
+    .bracket { fill: none; stroke: #334155; stroke-width: 2.6; stroke-linecap: round; }
+    .divider { stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 4 3; }
+
+    .group-label {
+        font-family: -apple-system, sans-serif;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 11px;
+        fill: #64748b;
+        text-anchor: middle;
+    }
+
+    .formulas-card {
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .step-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 0.95rem;
+        opacity: 0.3;
+        transition: opacity 0.35s ease-in-out;
+    }
+    .step-row.active { opacity: 1; }
+
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .step-row.result-row {
+        border-top: 1px dashed #1e293b;
+        margin-top: 5px;
+        padding-top: 8px;
+        font-weight: bold;
+        color: #fde68a;
+        font-size: 1.02rem;
+    }
+
+    .sliders-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+    }
+
+    .slider-item {
+        background: #ffffff;
+        border: 1px solid #edf2f7;
+        padding: 6px 7px;
+        border-radius: 6px;
+    }
+
+    .slider-label-row {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 0.74rem;
+        color: #334155;
+        margin-bottom: 3px;
+    }
+
+    .slider-row input[type="range"] {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+    }
+
+    .val-num {
+        font-family: monospace;
+        font-weight: bold;
+        color: #0f172a;
+    }
+
+    .theory-toggle {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        color: #334155;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .theory-toggle:hover { background: #e2e8f0; }
+
+    .theory-content {
+        display: none;
+        background: #fffbeb;
+        border-left: 3px solid #b45309;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        color: #92400e;
+        line-height: 1.35;
+        margin-top: 5px;
+    }
+
+    .math-var {
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        font-weight: bold;
+    }
+
+    .caption {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-top: 6px;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+
+<div class="det-container">
+    <div class="det-header">
+        <h3>Kolmerealise determinandi leidmine</h3>
+        <p>Sarrusi reegel: 1. ja 2. veerg kirjutatakse maatriksi kõrvale ning tõmmatakse diagonaalid</p>
+    </div>
+
+    <div class="det-body">
+        <div class="det-visual">
+            <div class="anim-controls">
+                <button class="btn primary" onclick="playAnimation()">▶ Näita animatsiooni</button>
+                <button class="btn" onclick="randomize()">🎲 Juhuslikud arvud</button>
+            </div>
+
+            <div class="svg-wrapper">
+                <svg class="matrix-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                    <!-- brackets around original 3x3 matrix -->
+                    <path class="bracket" d="M 22 30 L 8 30 L 8 270 L 22 270" />
+                    <path class="bracket" d="M 218 30 L 232 30 L 232 270 L 218 270" />
+
+                    <!-- divider between matrix and copied columns -->
+                    <line class="divider" x1="240" y1="20" x2="240" y2="280" />
+
+                    <!-- group labels -->
+                    <text class="group-label" x="120" y="292">Maatriks</text>
+                    <text class="group-label" x="295" y="292">Kopeeritud 1. ja 2. veerg</text>
+
+                    <!-- positive diagonals (drawn first, bottom layer) -->
+                    <path id="line-p1" class="diag-line diag-pos" stroke="#16a34a" d="M 50 55 L 120 150 L 190 245" />
+                    <path id="line-p2" class="diag-line diag-pos" stroke="#22c55e" d="M 120 55 L 190 150 L 260 245" />
+                    <path id="line-p3" class="diag-line diag-pos" stroke="#4ade80" d="M 190 55 L 260 150 L 330 245" />
+
+                    <!-- negative diagonals -->
+                    <path id="line-n1" class="diag-line diag-neg" stroke="#dc2626" d="M 190 55 L 120 150 L 50 245" />
+                    <path id="line-n2" class="diag-line diag-neg" stroke="#ef4444" d="M 260 55 L 190 150 L 120 245" />
+                    <path id="line-n3" class="diag-line diag-neg" stroke="#f87171" d="M 330 55 L 260 150 L 190 245" />
+
+                    <!-- original matrix circles: col1,col2,col3 x rows -->
+                    <circle class="val-circle orig" cx="50" cy="55" r="20" />
+                    <text class="val-text" id="txt-a" x="50" y="56">2</text>
+                    <circle class="val-circle orig" cx="120" cy="55" r="20" />
+                    <text class="val-text" id="txt-b" x="120" y="56">0</text>
+                    <circle class="val-circle orig" cx="190" cy="55" r="20" />
+                    <text class="val-text" id="txt-c" x="190" y="56">1</text>
+
+                    <circle class="val-circle orig" cx="50" cy="150" r="20" />
+                    <text class="val-text" id="txt-d" x="50" y="151">1</text>
+                    <circle class="val-circle orig" cx="120" cy="150" r="20" />
+                    <text class="val-text" id="txt-e" x="120" y="151">3</text>
+                    <circle class="val-circle orig" cx="190" cy="150" r="20" />
+                    <text class="val-text" id="txt-f" x="190" y="151">-1</text>
+
+                    <circle class="val-circle orig" cx="50" cy="245" r="20" />
+                    <text class="val-text" id="txt-g" x="50" y="246">0</text>
+                    <circle class="val-circle orig" cx="120" cy="245" r="20" />
+                    <text class="val-text" id="txt-h" x="120" y="246">2</text>
+                    <circle class="val-circle orig" cx="190" cy="245" r="20" />
+                    <text class="val-text" id="txt-i" x="190" y="246">1</text>
+
+                    <!-- copied col1 -> col4, col2 -> col5 -->
+                    <circle class="val-circle copy" cx="260" cy="55" r="20" />
+                    <text class="val-text" id="txt-a2" x="260" y="56">2</text>
+                    <circle class="val-circle copy" cx="330" cy="55" r="20" />
+                    <text class="val-text" id="txt-b2" x="330" y="56">0</text>
+
+                    <circle class="val-circle copy" cx="260" cy="150" r="20" />
+                    <text class="val-text" id="txt-d2" x="260" y="151">1</text>
+                    <circle class="val-circle copy" cx="330" cy="150" r="20" />
+                    <text class="val-text" id="txt-e2" x="330" y="151">3</text>
+
+                    <circle class="val-circle copy" cx="260" cy="245" r="20" />
+                    <text class="val-text" id="txt-g2" x="260" y="246">0</text>
+                    <circle class="val-circle copy" cx="330" cy="245" r="20" />
+                    <text class="val-text" id="txt-h2" x="330" y="246">2</text>
+                </svg>
+            </div>
+            <div class="caption">Roheline = korruta ja liida (+) · Punane = korruta ja lahuta (−)</div>
+        </div>
+
+        <div class="det-controls">
+            <div class="formulas-card">
+                <div class="step-row" id="step-p1"><span class="step-dot" style="background:#16a34a"></span><span id="calc-p1">a·e·i = ...</span></div>
+                <div class="step-row" id="step-p2"><span class="step-dot" style="background:#22c55e"></span><span id="calc-p2">b·f·g = ...</span></div>
+                <div class="step-row" id="step-p3"><span class="step-dot" style="background:#4ade80"></span><span id="calc-p3">c·d·h = ...</span></div>
+                <div class="step-row" id="step-n1"><span class="step-dot" style="background:#dc2626"></span><span id="calc-n1">c·e·g = ...</span></div>
+                <div class="step-row" id="step-n2"><span class="step-dot" style="background:#ef4444"></span><span id="calc-n2">a·f·h = ...</span></div>
+                <div class="step-row" id="step-n3"><span class="step-dot" style="background:#f87171"></span><span id="calc-n3">b·d·i = ...</span></div>
+                <div class="step-row result-row" id="step-result"><span class="step-dot" style="background:#fbbf24"></span><span id="calc-result">det(A) = ...</span></div>
+            </div>
+
+            <div class="sliders-grid">
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">a</span><span class="val-num" id="lbl-a">2</span></div><div class="slider-row"><input type="range" id="sl-a" min="-5" max="5" step="1" value="2"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">b</span><span class="val-num" id="lbl-b">0</span></div><div class="slider-row"><input type="range" id="sl-b" min="-5" max="5" step="1" value="0"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">c</span><span class="val-num" id="lbl-c">1</span></div><div class="slider-row"><input type="range" id="sl-c" min="-5" max="5" step="1" value="1"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">d</span><span class="val-num" id="lbl-d">1</span></div><div class="slider-row"><input type="range" id="sl-d" min="-5" max="5" step="1" value="1"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">e</span><span class="val-num" id="lbl-e">3</span></div><div class="slider-row"><input type="range" id="sl-e" min="-5" max="5" step="1" value="3"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">f</span><span class="val-num" id="lbl-f">-1</span></div><div class="slider-row"><input type="range" id="sl-f" min="-5" max="5" step="1" value="-1"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">g</span><span class="val-num" id="lbl-g">0</span></div><div class="slider-row"><input type="range" id="sl-g" min="-5" max="5" step="1" value="0"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">h</span><span class="val-num" id="lbl-h">2</span></div><div class="slider-row"><input type="range" id="sl-h" min="-5" max="5" step="1" value="2"></div></div>
+                <div class="slider-item"><div class="slider-label-row"><span class="math-var">i</span><span class="val-num" id="lbl-i">1</span></div><div class="slider-row"><input type="range" id="sl-i" min="-5" max="5" step="1" value="1"></div></div>
+            </div>
+
+            <div>
+                <button class="theory-toggle" onclick="toggleTheory()">
+                    <span>ℹ️ Sarrusi reegli teooria</span>
+                    <span id="theory-arrow">▼</span>
+                </button>
+                <div class="theory-content" id="theory-block">
+                    <strong>Sarrusi reegel</strong> kehtib ainult 3×3 maatriksite jaoks. Maatriksi
+                    <span class="math-var">[[a,b,c],[d,e,f],[g,h,i]]</span>
+                    kõrvale kirjutatakse uuesti 1. ja 2. veerg, misjärel tõmmatakse kuus diagonaali:<br><br>
+                    • Kolm diagonaali, mis lähevad <strong style="color:#16a34a;">vasakult paremale alla</strong>, annavad korrutised, mis <strong>liidetakse</strong>: aei, bfg, cdh.<br>
+                    • Kolm diagonaali, mis lähevad <strong style="color:#dc2626;">paremalt vasakule alla</strong>, annavad korrutised, mis <strong>lahutatakse</strong>: ceg, afh, bdi.<br><br>
+                    <div style="text-align:center; font-size:0.9rem;">
+                        det(<span class="math-var">A</span>) = aei + bfg + cdh − ceg − afh − bdi
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const posLines = ['line-p1', 'line-p2', 'line-p3'].map(id => document.getElementById(id));
+    const negLines = ['line-n1', 'line-n2', 'line-n3'].map(id => document.getElementById(id));
+    const allLines = [...posLines, ...negLines];
+
+    const steps = {
+        p1: document.getElementById('step-p1'),
+        p2: document.getElementById('step-p2'),
+        p3: document.getElementById('step-p3'),
+        n1: document.getElementById('step-n1'),
+        n2: document.getElementById('step-n2'),
+        n3: document.getElementById('step-n3'),
+        result: document.getElementById('step-result')
+    };
+
+    function setupLine(line) {
+        const len = line.getTotalLength();
+        line.style.strokeDasharray = len;
+        line.style.strokeDashoffset = len;
+    }
+    allLines.forEach(setupLine);
+
+    const sliderIds = ['a','b','c','d','e','f','g','h','i'];
+
+    function getVals() {
+        const v = {};
+        sliderIds.forEach(k => { v[k] = parseInt(document.getElementById('sl-' + k).value); });
+        return v;
+    }
+
+    function fmt(n) { return n >= 0 ? n : `(${n})`; }
+
+    function updateDisplay() {
+        const v = getVals();
+
+        sliderIds.forEach(k => {
+            document.getElementById('lbl-' + k).textContent = v[k];
+            document.getElementById('txt-' + k).textContent = v[k];
+        });
+        // copied columns
+        document.getElementById('txt-a2').textContent = v.a;
+        document.getElementById('txt-b2').textContent = v.b;
+        document.getElementById('txt-d2').textContent = v.d;
+        document.getElementById('txt-e2').textContent = v.e;
+        document.getElementById('txt-g2').textContent = v.g;
+        document.getElementById('txt-h2').textContent = v.h;
+
+        const p1 = v.a * v.e * v.i;
+        const p2 = v.b * v.f * v.g;
+        const p3 = v.c * v.d * v.h;
+        const n1 = v.c * v.e * v.g;
+        const n2 = v.a * v.f * v.h;
+        const n3 = v.b * v.d * v.i;
+
+        const posSum = p1 + p2 + p3;
+        const negSum = n1 + n2 + n3;
+        const result = posSum - negSum;
+
+        document.getElementById('calc-p1').textContent = `+ ${fmt(v.a)}·${fmt(v.e)}·${fmt(v.i)} = ${p1}`;
+        document.getElementById('calc-p2').textContent = `+ ${fmt(v.b)}·${fmt(v.f)}·${fmt(v.g)} = ${p2}`;
+        document.getElementById('calc-p3').textContent = `+ ${fmt(v.c)}·${fmt(v.d)}·${fmt(v.h)} = ${p3}`;
+        document.getElementById('calc-n1').textContent = `− ${fmt(v.c)}·${fmt(v.e)}·${fmt(v.g)} = ${n1}`;
+        document.getElementById('calc-n2').textContent = `− ${fmt(v.a)}·${fmt(v.f)}·${fmt(v.h)} = ${n2}`;
+        document.getElementById('calc-n3').textContent = `− ${fmt(v.b)}·${fmt(v.d)}·${fmt(v.i)} = ${n3}`;
+        document.getElementById('calc-result').textContent =
+            `det(A) = ${posSum} − ${negSum} = ${result}`;
+    }
+
+    function resetAnimState() {
+        allLines.forEach(line => {
+            line.style.transition = 'none';
+            line.style.strokeDashoffset = line.getTotalLength();
+        });
+        Object.values(steps).forEach(s => s.classList.remove('active'));
+        void document.getElementById('line-p1').offsetWidth;
+        allLines.forEach(line => { line.style.transition = ''; });
+    }
+
+    function playAnimation() {
+        updateDisplay();
+        resetAnimState();
+
+        const sequence = [
+            ['line-p1', 'p1'], ['line-p2', 'p2'], ['line-p3', 'p3'],
+            ['line-n1', 'n1'], ['line-n2', 'n2'], ['line-n3', 'n3']
+        ];
+
+        sequence.forEach(([lineId, stepKey], idx) => {
+            setTimeout(() => {
+                document.getElementById(lineId).style.strokeDashoffset = 0;
+                steps[stepKey].classList.add('active');
+            }, 150 + idx * 620);
+        });
+
+        setTimeout(() => {
+            steps.result.classList.add('active');
+        }, 150 + sequence.length * 620 + 300);
+    }
+
+    function randomize() {
+        sliderIds.forEach(k => {
+            document.getElementById('sl-' + k).value = Math.floor(Math.random() * 11) - 5;
+        });
+        playAnimation();
+    }
+
+    function toggleTheory() {
+        const block = document.getElementById('theory-block');
+        const arrow = document.getElementById('theory-arrow');
+        if (block.style.display === 'block') { block.style.display = 'none'; arrow.textContent = '▼'; }
+        else { block.style.display = 'block'; arrow.textContent = '▲'; }
+    }
+
+    sliderIds.forEach(k => {
+        document.getElementById('sl-' + k).addEventListener('input', updateDisplay);
+    });
+
+    updateDisplay();
+    setTimeout(playAnimation, 300);
+</script>
+</body>
+</html>
