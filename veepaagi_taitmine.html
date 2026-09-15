@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veepaagi täitmine – Lineaarne mudel</title>
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$']] } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" id="MathJax-script"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7f9;
+    color: #333;
+    overflow: hidden;
+  }
+  .container {
+    height: 100vh;
+    max-width: 760px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  }
+  h1 {
+    color: #1a5b8c;
+    text-align: center;
+    font-size: 1.15em;
+    margin: 4px 0 8px;
+  }
+  .formula-box {
+    background: #eef6fc;
+    border-left: 5px solid #2196F3;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 1.05em;
+    text-align: center;
+  }
+  .value-display { color: #0284c7; font-weight: bold; }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .control-group {
+    background: #f8fafc;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  label { font-weight: bold; display: block; margin-bottom: 2px; font-size: 0.82em; }
+  input[type=range] { width: 100%; }
+  .vis-container {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 0;
+  }
+  .tank-wrapper { text-align: center; }
+  .tank {
+    width: 80px;
+    height: 130px;
+    border: 3px solid #334155;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    position: relative;
+    background: #e2e8f0;
+    overflow: hidden;
+    margin: 0 auto 6px;
+  }
+  .water {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(180deg, #38bdf8, #0284c7);
+    transition: height 0.1s ease;
+  }
+  canvas {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    max-height: 100%;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+  th, td { border: 1px solid #cbd5e1; padding: 3px 6px; text-align: center; }
+  th { background: #f1f5f9; }
+  .table-wrap { margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Veepaagi täitmine – Lineaarne mudel</h1>
+
+  <div class="formula-box">
+    $V(t) = kt + V_0$ &nbsp;→&nbsp; <span id="formulaText">$V = 5t + 20$</span><br>
+    Hetke veekogus: <strong class="value-display" id="currentV">20</strong> l
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Aeg t: <span class="value-display" id="tVal">0</span> min</label>
+      <input type="range" id="timeSlider" min="0" max="20" value="0" step="1">
+    </div>
+    <div class="control-group">
+      <label>Algkogus $V_0$: <span class="value-display" id="v0Val">20</span> l</label>
+      <input type="range" id="v0Slider" min="0" max="50" value="20" step="1">
+    </div>
+    <div class="control-group">
+      <label>Kiirus k: <span class="value-display" id="kVal">5</span> l/min</label>
+      <input type="range" id="kSlider" min="1" max="15" value="5" step="1">
+    </div>
+  </div>
+
+  <div class="vis-container">
+    <div class="tank-wrapper">
+      <div class="tank"><div class="water" id="waterLevel" style="height:13.3%;"></div></div>
+      <strong>Paagis: <span id="tankPercent">20</span> l</strong>
+    </div>
+    <canvas id="graphCanvas" width="360" height="170"></canvas>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>t (min)</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+      <tbody><tr><th>V (l)</th><td id="c0"></td><td id="c1"></td><td id="c2"></td><td id="c3"></td><td id="c4"></td><td id="c5"></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const timeSlider = document.getElementById('timeSlider');
+const v0Slider = document.getElementById('v0Slider');
+const kSlider = document.getElementById('kSlider');
+const tVal = document.getElementById('tVal');
+const v0Val = document.getElementById('v0Val');
+const kVal = document.getElementById('kVal');
+const currentV = document.getElementById('currentV');
+const formulaText = document.getElementById('formulaText');
+const waterLevel = document.getElementById('waterLevel');
+const tankPercent = document.getElementById('tankPercent');
+const canvas = document.getElementById('graphCanvas');
+const ctx = canvas.getContext('2d');
+let mjTimer = null;
+
+function update() {
+  const t = parseInt(timeSlider.value);
+  const v0 = parseInt(v0Slider.value);
+  const k = parseInt(kSlider.value);
+  const V = k * t + v0;
+
+  tVal.textContent = t;
+  v0Val.textContent = v0;
+  kVal.textContent = k;
+  currentV.textContent = V;
+  tankPercent.textContent = V;
+
+  const newFormula = `$V = ${k}t + ${v0}$`;
+  if (formulaText.textContent !== newFormula) {
+    formulaText.textContent = newFormula;
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      clearTimeout(mjTimer);
+      mjTimer = setTimeout(() => MathJax.typesetPromise([formulaText]), 30);
+    }
+  }
+
+  const maxCap = 150;
+  waterLevel.style.height = Math.min(100, (V / maxCap) * 100) + '%';
+
+  for (let i = 0; i <= 5; i++) {
+    document.getElementById('c' + i).textContent = k * i + v0;
+    document.getElementById('c' + i).style.background = (i === t) ? '#e0f2fe' : '';
+  }
+
+  drawGraph(t, v0, k);
+}
+
+function drawGraph(currentT, v0, k) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const padding = 32;
+  const w = canvas.width - padding * 2;
+  const h = canvas.height - padding * 2;
+  const maxT = 20, maxV = 150;
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 2;
+  ctx.moveTo(padding, padding);
+  ctx.lineTo(padding, canvas.height - padding);
+  ctx.lineTo(canvas.width - padding, canvas.height - padding);
+  ctx.stroke();
+
+  ctx.fillStyle = '#475569';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('V (l)', 4, padding - 8);
+  ctx.fillText('t (min)', canvas.width - padding - 6, canvas.height - 8);
+
+  const startX = padding, startY = canvas.height - padding - (v0 / maxV) * h;
+  const endX = padding + w, endY = canvas.height - padding - ((k * maxT + v0) / maxV) * h;
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 3;
+  ctx.moveTo(startX, startY);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+
+  const curX = padding + (currentT / maxT) * w;
+  const curV = k * currentT + v0;
+  const curY = canvas.height - padding - (curV / maxV) * h;
+
+  ctx.beginPath();
+  ctx.arc(curX, curY, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = '#ef4444';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+timeSlider.addEventListener('input', update);
+v0Slider.addEventListener('input', update);
+kSlider.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
