@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lineaarne mudel: P = 230n + 1250</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F4EC;
+    --ink:#1B2333;
+    --muted:#6B6656;
+    --grid:#E1DBC8;
+    --line-col:#1B3A6B;
+    --accent:#D9720B;
+    --accent-soft:#F4DEC2;
+    --card:#FFFDF8;
+    --border:#DFD8C2;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    padding:28px 32px 20px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;}
+  header h1{
+    font-size:1.35rem;
+    margin:0 0 4px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:var(--muted);
+    font-size:0.95rem;
+    max-width:62ch;
+  }
+  .formula-bar{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin:18px 0 22px;
+    padding:14px 20px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:4px;
+  }
+  .formula-bar .formula{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:1.5rem;
+    font-weight:600;
+    color:var(--line-col);
+    white-space:nowrap;
+  }
+  .formula-bar .legend{
+    font-size:0.85rem;
+    color:var(--muted);
+    line-height:1.5;
+    border-left:1px solid var(--border);
+    padding-left:18px;
+  }
+  .formula-bar .legend b{color:var(--ink);font-weight:600;}
+  .grid{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:20px;
+    align-items:stretch;
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:16px 18px;
+  }
+  .panel h2{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--muted);
+    margin:0 0 12px;
+    font-weight:600;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.92rem;
+  }
+  th,td{
+    text-align:right;
+    padding:6px 4px;
+    border-bottom:1px solid var(--grid);
+  }
+  th:first-child,td:first-child{text-align:left;color:var(--muted);font-family:"IBM Plex Sans",sans-serif;font-weight:500;}
+  tr.active td{
+    background:var(--accent-soft);
+    font-weight:600;
+    color:var(--ink);
+  }
+  .chart-panel{display:flex;flex-direction:column;}
+  svg{width:100%;height:auto;display:block;}
+  .axis-label{font-family:"IBM Plex Sans",sans-serif;font-size:11px;fill:var(--muted);}
+  .grid-line{stroke:var(--grid);stroke-width:1;}
+  .model-line{stroke:var(--line-col);stroke-width:2.5;fill:none;}
+  .data-dot{fill:var(--line-col);}
+  .guide{stroke:var(--accent);stroke-width:1.3;stroke-dasharray:4 4;}
+  .active-dot{fill:var(--accent);stroke:var(--card);stroke-width:2;}
+  .controls{margin-top:10px;}
+  .slider-row{display:flex;align-items:center;gap:14px;}
+  input[type=range]{
+    flex:1;
+    accent-color:var(--accent);
+    height:4px;
+  }
+  .readout{
+    display:flex;
+    gap:22px;
+    margin-top:12px;
+    font-family:"IBM Plex Mono",monospace;
+  }
+  .readout div{flex:1;text-align:center;background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:8px 6px;}
+  .readout .label{display:block;font-family:"IBM Plex Sans",sans-serif;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:2px;}
+  .readout .value{font-size:1.15rem;font-weight:600;color:var(--ink);}
+  .readout .value.accent{color:var(--accent);}
+  .calc-line{
+    margin-top:12px;
+    padding:10px 14px;
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:4px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:1rem;
+    text-align:center;
+    letter-spacing:0.01em;
+  }
+  .calc-line .step{color:var(--muted);}
+  .calc-line .result{color:var(--accent);font-weight:600;}
+  footer{
+    margin-top:16px;
+    font-size:0.78rem;
+    color:var(--muted);
+  }
+  @media (max-width:720px){
+    .grid{grid-template-columns:1fr;}
+    .formula-bar{flex-direction:column;align-items:flex-start;gap:8px;}
+    .formula-bar .legend{border-left:none;padding-left:0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Videomonteerija töötasu — lineaarne mudel</h1>
+    <p>Kindel põhitasu + sama suur lisatasu iga klipi eest. Liigutage liugurit ja vaadake, kuidas punkt graafikul ja töötasu tabelis muutuvad koos reklaamklippide arvuga.</p>
+  </header>
+
+  <div class="formula-bar">
+    <div class="formula">P = 230n + 1250</div>
+    <div class="legend">
+      <b>1250 €</b> — põhitasu (kui n = 0)<br>
+      <b>230 €</b> — lisatasu ühe monteeritud klipi eest
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Ettevõtte andmed</h2>
+      <table>
+        <thead>
+          <tr><th>n, klippe</th><th>P, €</th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="panel chart-panel">
+      <h2>Graafik P(n)</h2>
+      <svg id="chart" viewBox="0 0 560 300"></svg>
+      <div class="controls">
+        <div class="slider-row">
+          <span style="font-size:0.8rem;color:var(--muted);">n</span>
+          <input type="range" id="slider" min="0" max="12" step="2" value="4">
+          <span style="font-size:0.8rem;color:var(--muted);">12</span>
+        </div>
+        <div class="readout">
+          <div><span class="label">Klippe n</span><span class="value" id="n-val">4</span></div>
+          <div><span class="label">Töötasu P</span><span class="value accent" id="p-val">2170 €</span></div>
+        </div>
+        <div class="calc-line" id="calc-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>P = 230n + 1250 · lineaarne mudel: iga klibi eest ühtlane kasv 230 €</footer>
+</div>
+
+<script>
+const data = [[0,1250],[2,1710],[4,2170],[6,2630],[8,3090],[10,3550],[12,4010]];
+const slope = 230, intercept = 1250;
+
+const tbody = document.getElementById('table-body');
+data.forEach(([n,p]) => {
+  const tr = document.createElement('tr');
+  tr.dataset.n = n;
+  tr.innerHTML = `<td>${n}</td><td>${p}</td>`;
+  tbody.appendChild(tr);
+});
+
+const svgNS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById('chart');
+const W = 560, H = 300;
+const padL = 56, padR = 20, padT = 16, padB = 34;
+const nMax = 12, pMax = 4400;
+
+function nToX(n){ return padL + (n/nMax) * (W-padL-padR); }
+function pToY(p){ return H-padB - (p/pMax) * (H-padT-padB); }
+
+function el(tag, attrs){
+  const e = document.createElementNS(svgNS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// gridlines + axis labels
+for(let n=0; n<=nMax; n+=2){
+  svg.appendChild(el('line',{x1:nToX(n),y1:padT,x2:nToX(n),y2:H-padB,class:'grid-line'}));
+  const t = el('text',{x:nToX(n),y:H-padB+16,'text-anchor':'middle',class:'axis-label'});
+  t.textContent = n;
+  svg.appendChild(t);
+}
+for(let p=0; p<=pMax; p+=1000){
+  svg.appendChild(el('line',{x1:padL,y1:pToY(p),x2:W-padR,y2:pToY(p),class:'grid-line'}));
+  const t = el('text',{x:padL-8,y:pToY(p)+4,'text-anchor':'end',class:'axis-label'});
+  t.textContent = p;
+  svg.appendChild(t);
+}
+// axis titles
+const xt = el('text',{x:(padL+W-padR)/2,y:H-4,'text-anchor':'middle',class:'axis-label'});
+xt.textContent = 'n — klippide arv';
+svg.appendChild(xt);
+const yt = el('text',{x:14,y:padT+6,'text-anchor':'start',class:'axis-label'});
+yt.textContent = 'P, €';
+svg.appendChild(yt);
+
+// model line
+svg.appendChild(el('line',{
+  x1:nToX(0), y1:pToY(intercept),
+  x2:nToX(nMax), y2:pToY(slope*nMax+intercept),
+  class:'model-line'
+}));
+
+// data points
+data.forEach(([n,p]) => {
+  svg.appendChild(el('circle',{cx:nToX(n),cy:pToY(p),r:4,class:'data-dot'}));
+});
+
+// guides + active dot
+const guideX = el('line',{class:'guide'});
+const guideY = el('line',{class:'guide'});
+const activeDot = el('circle',{r:6,class:'active-dot'});
+svg.appendChild(guideX);
+svg.appendChild(guideY);
+svg.appendChild(activeDot);
+
+const slider = document.getElementById('slider');
+const nVal = document.getElementById('n-val');
+const pVal = document.getElementById('p-val');
+
+function update(){
+  const n = Number(slider.value);
+  const p = slope*n + intercept;
+  const x = nToX(n), y = pToY(p);
+
+  guideX.setAttribute('x1', x); guideX.setAttribute('y1', H-padB);
+  guideX.setAttribute('x2', x); guideX.setAttribute('y2', y);
+  guideY.setAttribute('x1', padL); guideY.setAttribute('y1', y);
+  guideY.setAttribute('x2', x); guideY.setAttribute('y2', y);
+  activeDot.setAttribute('cx', x);
+  activeDot.setAttribute('cy', y);
+
+  nVal.textContent = n;
+  pVal.textContent = p + ' €';
+
+  const mult = slope*n;
+  document.getElementById('calc-line').innerHTML =
+    `P = 230 · <b>${n}</b> + 1250&nbsp; <span class="step">=</span> &nbsp;${mult} + 1250&nbsp; <span class="step">=</span> &nbsp;<span class="result">${p} €</span>`;
+
+  document.querySelectorAll('#table-body tr').forEach(tr=>{
+    tr.classList.toggle('active', Number(tr.dataset.n) === n);
+  });
+}
+slider.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
